@@ -7,15 +7,15 @@
 
 <!--
 ================================================================================
-  KKH PREMs Toolkits · 展示网站框架（framework only）
+  KKH PREMs Toolkits · 展示网站（resource hub）
 --------------------------------------------------------------------------------
-  仅允许的外部依赖：PDF.js CDN（见本文件底部内联 JS 中的 PDFJS_LIB）。
-  其余 CSS / JS / SVG 图标全部内联，零框架。
+  零外部依赖：PDF 预览用浏览器原生 iframe（Resource Guide / Checklist 托管于 GitHub Releases）。
+  CSS / JS / SVG 图标全部内联。
 
-  后续工程师需要替换的真实内容（搜索 【嵌入点】 即可定位）：
-    1. Resource Guide PDF 路径  → JS 中 PDF_SOURCES.guide
-    2. Checklist PDF 路径       → JS 中 PDF_SOURCES.checklist
-    3. Storyboard 图片路径      → JS 中 STORYBOARD_IMAGES
+  真实内容配置（搜索 PDF_SOURCES / STORYBOARD_IMAGES 即可定位）：
+    1. Resource Guide PDF  → JS 中 PDF_SOURCES.guide（GitHub Releases 资产 URL）
+    2. Checklist PDF       → JS 中 PDF_SOURCES.checklist（GitHub Releases 资产 URL）
+    3. Storyboard 图片     → JS 中 STORYBOARD_IMAGES（storyboard/1.png ~ 7.png）
 ================================================================================
 -->
 
@@ -178,16 +178,6 @@
   .tool-btn svg{width:14px;height:14px}
   .tool-btn:hover:not(:disabled){border-color:var(--blue-600);color:var(--blue-600);transform:translateY(-1px)}
   .tool-btn:disabled{opacity:.38;cursor:not-allowed}
-  .tool-btn.fit{color:var(--blue-600)}
-  .pdf-page-label{
-    min-width:92px;text-align:center;font-size:11.5px;font-weight:600;color:var(--ink-70);
-    font-variant-numeric:tabular-nums;
-  }
-  .pdf-zoom-label{
-    min-width:46px;text-align:center;font-size:11.5px;font-weight:600;color:var(--ink-70);
-    font-variant-numeric:tabular-nums;
-  }
-  .toolbar-sep{width:1px;height:20px;background:var(--border)}
   .toolbar-spacer{flex:1}
 
   .pdf-stage{
@@ -206,30 +196,7 @@
   .pdf-loading-sub{font-size:11px;color:var(--ink-50);font-weight:400}
   .pdf-stage::-webkit-scrollbar{width:9px;height:9px}
   .pdf-stage::-webkit-scrollbar-thumb{background:rgba(31,78,121,.18);border-radius:8px}
-  .pdf-canvas{
-    background:#fff;border:1px solid var(--border);border-radius:4px;
-    box-shadow:0 4px 14px rgba(30,50,80,.10);display:none;
-  }
-  .pdf-notice{
-    max-width:560px;text-align:center;color:var(--ink-50);padding:34px 30px;
-    background:var(--surface);border:1px dashed var(--border);border-radius:var(--radius);
-  }
-  .pdf-notice .ico{width:38px;height:38px;margin:0 auto 12px;border-radius:10px;background:var(--blue-50);display:grid;place-items:center;color:var(--blue-600)}
-  .pdf-notice .ico svg{width:19px;height:19px}
-  .pdf-notice b{display:block;font-size:13px;color:var(--ink);margin-bottom:6px}
-  .pdf-notice code{
-    display:inline-block;margin-top:10px;padding:5px 9px;border-radius:6px;
-    background:#F5F7FA;border:1px solid var(--border);font-size:11px;color:var(--blue-900);
-  }
-  .pdf-notice p{margin:0 0 6px;font-size:11.5px;line-height:1.6}
-  .pdf-progress{
-    width:100%;max-width:340px;height:6px;border-radius:999px;
-    background:#E3E8EF;margin:8px 0 2px;overflow:hidden;
-  }
-  .pdf-progress-fill{
-    height:100%;width:0;border-radius:999px;background:var(--blue-600);
-    transition:width .2s ease;
-  }
+
 
   /* ============================ Storyboard ============================ */
   .story-intro{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:16px;flex-wrap:wrap}
@@ -581,7 +548,7 @@
   ------------------------------------------------------------ */
   var PDF_SOURCES = {
     guide: "https://github.com/YMaTaZ/kkh-prems-toolkit/releases/download/v1.0-resource-guide/resource-guide.pdf",   // ← Release 资产（仓库外，部署快）
-    checklist: "checklist.pdf"     // ← 同源小文件，留在仓库
+    checklist: "https://github.com/YMaTaZ/kkh-prems-toolkit/releases/download/v1.0-resource-guide/checklist.pdf"   // ← Release 资产
   };
 
   /* iframe 版 PDF 预览：懒加载 + 加载提示（iframe 无进度事件，用 onload 隐藏提示） */
@@ -612,9 +579,6 @@
     { src: "storyboard/7.png", title: "7 · ACT TOGETHER",            note: "Agree. Assign. Re-check." }
   ];
 
-  /* PDF.js 本地自托管（lib/ 目录），GitHub Pages 无需外部 CDN */
-  var PDFJS_LIB = "lib/pdf.min.js";
-  var PDFJS_WORKER = "lib/pdf.worker.min.js";
 
   /* ============================================================
      1. Utilities
@@ -772,227 +736,18 @@
     renderStory(0);
   }
 
-  /* ============================================================
-     4. PDF.js — 按需加载，每次只渲染当前页
-  ============================================================ */
-  var pdfStates = {
-    "pdf-guide":     { page: 1, scale: 1, fit: true, doc: null, task: null, loading: false, loaded: false },
-    "pdf-checklist": { page: 1, scale: 1, fit: true, doc: null, task: null, loading: false, loaded: false }
-  };
-
-  var pdfLibLoading = false;
-  var pdfLibCallbacks = [];
-  function ensurePdfLib(cb){
-    if(window.pdfjsLib){ cb(); return; }
-    /* library 还在加载中时也把回调排队，避免快速切换视图丢回调 */
-    pdfLibCallbacks.push(cb);
-    if(pdfLibLoading) return;
-    pdfLibLoading = true;
-
-    var script = document.createElement("script");
-    script.src = PDFJS_LIB;
-    script.onload = function(){
-      try{
-        window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER;
-        var queue = pdfLibCallbacks.splice(0);
-        queue.forEach(function(fn){ fn(); });
-      }catch(err){
-        pdfFailAll("PDF.js initialisation failed.");
-      }
-    };
-    script.onerror = function(){
-      pdfLibLoading = false;
-      pdfLibCallbacks = [];
-      pdfFailAll("PDF.js CDN could not be loaded — network access is required.");
-    };
-    document.head.appendChild(script);
-  }
-
-  function pdfFailAll(msg){
-    Object.keys(pdfStates).forEach(function(id){
-      pdfStates[id].loading = false; /* 允许用户重新进入视图时重试 */
-      showNotice(id, "PDF.js unavailable", msg, "");
-    });
-  }
-
-  function viewerIdFor(viewName){
-    return viewName === "resource-guide" ? "pdf-guide" : "pdf-checklist";
-  }
-
-  /* 进入视图时调用：只初始化一次，之后切换回来不再重新加载 */
-  function activatePdf(viewName){
-    var id = viewerIdFor(viewName);
-    var st = pdfStates[id];
-    if(st.loaded || st.loading) return;
-    st.loading = true;
-
-    ensurePdfLib(function(){
-      var src = viewName === "resource-guide" ? PDF_SOURCES.guide : PDF_SOURCES.checklist;
-      showNotice(id, "Opening PDF…", src, src);
-
-      window.pdfjsLib.getDocument({
-        url: src,
-        /* 大文件：只按需拉取当前页所需 range，不做整本预渲染。 */
-        disableAutoFetch: false,
-        rangeChunkSize: 262144,
-        onProgress: function(ev){
-          if(ev && ev.total && !st.loaded){
-            var pct = Math.min(100, Math.round(ev.loaded / ev.total * 100));
-            var stEl = document.getElementById(id);
-            var b = stEl ? stEl.querySelector(".pdf-notice b") : null;
-            if(b){ b.textContent = "Loading PDF… " + pct + "%"; }
-            var fill = document.getElementById(id + "-progress");
-            if(fill){ fill.style.width = pct + "%"; }
-          }
-        }
-      }).promise.then(function(doc){
-        st.doc = doc;
-        st.loaded = true;
-        st.loading = false;
-        updatePdfChrome(id);
-        renderPdfPage(id);
-      }).catch(function(err){
-        st.loading = false;
-        showNotice(
-          id,
-          "PDF not found at placeholder path",
-          "Replace the placeholder path in PDF_SOURCES with the real file, then reload. (" + (err && err.message ? err.message : "load error") + ")",
-          src
-        );
-      });
-    });
-  }
-
-  /* 初始默认视图是 Resource Guide */
-  setupPdfFrame("pdf-guide", PDF_SOURCES.guide);
-
-  function showNotice(id, title, text, path){
-    var stage = $("#" + id);
-    if(!stage) return;
-    var canvas = $(".pdf-canvas", stage);
-    var notice = $(".pdf-notice", stage);
-    canvas.style.display = "none";
-    if(notice){
-      $("b", notice).textContent = title;
-      $("p", notice).textContent = text;
-      var code = $("code", notice);
-      if(code && path !== null && path !== undefined){ code.textContent = path; }
-    } else {
-      var el = document.createElement("div");
-      el.className = "pdf-notice";
-      el.innerHTML = "<div class=\"ico\"><svg><use href=\"#i-info\"></use></svg></div><b></b><p></p><code></code>";
-      $("b", el).textContent = title;
-      $("p", el).textContent = text;
-      $("code", el).textContent = path || "";
-      stage.appendChild(el);
-    }
-    /* chrome: reset controls while loading/error */
-    $$(".tool-btn", stage.parentElement).forEach(function(b){ b.disabled = true; });
-    $(".pdf-page-label", stage.parentElement).textContent = "Page – / –";
-    $(".pdf-zoom-label", stage.parentElement).textContent = "—";
-  }
-
-  function updatePdfChrome(id){
-    var st = pdfStates[id];
-    var root = $("#" + id).closest(".pdf-card");
-    $(".pdf-page-label", root).textContent = "Page " + st.page + " / " + st.doc.numPages;
-    $(".pdf-zoom-label", root).textContent = Math.round(st.scale * 100) + "%";
-    $$(".tool-btn", root).forEach(function(b){
-      b.disabled = false;
-    });
-    $('[data-action="prev"]', root).disabled = (st.page <= 1);
-    $('[data-action="next"]', root).disabled = (st.page >= st.doc.numPages);
-  }
-
-  /* 核心：只获取 + 渲染当前页。页码变化时取消上一次未完成的 render task。 */
-  function renderPdfPage(id){
-    var st = pdfStates[id];
-    if(!st.doc) return;
-    if(st.task){ try{ st.task.cancel(); }catch(e){} st.task = null; }
-
-    var stage = $("#" + id);
-    var canvas = $(".pdf-canvas", stage);
-    var notice = $(".pdf-notice", stage);
-
-    st.doc.getPage(st.page).then(function(page){
-      var base = page.getViewport({ scale: 1 });
-
-      /* fit width：按 stage 可用宽度计算 scale（保留 3 位小数，避免取整导致的模糊） */
-      if(st.fit){
-        st.scale = Math.min(4, Math.max(0.35, (stage.clientWidth - 44) / base.width));
-        st.scale = Math.round(st.scale * 1000) / 1000;
-      }
-
-      /* devicePixelRatio 提升清晰度，但限制在 2 防止 56MB 大页爆内存 */
-      var dpr = Math.min(window.devicePixelRatio || 1, 2);
-      var viewport = page.getViewport({ scale: st.scale * dpr });
-
-      canvas.width = Math.floor(viewport.width);
-      canvas.height = Math.floor(viewport.height);
-      canvas.style.width = Math.floor(viewport.width / dpr) + "px";
-      canvas.style.height = Math.floor(viewport.height / dpr) + "px";
-      canvas.style.display = "block";
-      if(notice) notice.style.display = "none";
-
-      var ctx = canvas.getContext("2d", { alpha: false });
-      ctx.fillStyle = "#FFFFFF";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      st.task = page.render({ canvasContext: ctx, viewport: viewport });
-      st.task.promise.then(function(){
-        st.task = null;
-        updatePdfChrome(id);
-      }).catch(function(){ /* render cancelled — expected on rapid page flip */ });
-    }).catch(function(err){
-      showNotice(id, "Could not render this page", (err && err.message ? err.message : ""), PDF_SOURCES[viewNameFromId(id)]);
-    });
-  }
-
-  function viewNameFromId(id){ return id === "pdf-guide" ? "guide" : "checklist"; }
-
-  /* Toolbar actions（事件委托，两个 PDF viewer 共用） */
+  /* PDF 打印：新窗口打开整份 PDF */
   document.addEventListener("click", function(e){
     var btn = e.target.closest(".tool-btn");
-    if(!btn || btn.disabled) return;
-    var card = btn.closest(".pdf-card");
-    var stage = $(".pdf-stage", card);
-    var id = stage.id;
-    var st = pdfStates[id];
+    if(!btn) return;
     var action = btn.getAttribute("data-action");
-
-    /* 打印：新窗口打开整份 PDF，用浏览器原生查看器打印 */
     if(action === "print"){
+      var card = btn.closest(".pdf-card");
+      var stageEl = card ? card.querySelector(".pdf-stage") : null;
+      var id = stageEl ? stageEl.id : "";
       var src = id === "pdf-guide" ? PDF_SOURCES.guide : PDF_SOURCES.checklist;
       window.open(src, "_blank");
-      return;
     }
-
-    if(!st || !st.doc) return;
-
-    if(action === "prev" && st.page > 1){
-      st.page -= 1; renderPdfPage(id);
-    } else if(action === "next" && st.page < st.doc.numPages){
-      st.page += 1; renderPdfPage(id);
-    } else if(action === "zoom-in"){
-      st.fit = false; st.scale = Math.min(4, Math.round((st.scale + 0.15) * 100) / 100); renderPdfPage(id);
-    } else if(action === "zoom-out"){
-      st.fit = false; st.scale = Math.max(0.35, Math.round((st.scale - 0.15) * 100) / 100); renderPdfPage(id);
-    } else if(action === "fit"){
-      st.fit = true; renderPdfPage(id);
-    }
-    updatePdfChrome(id);
-  });
-
-  /* 窗口尺寸变化：fit 模式下重新适配 */
-  var resizeTimer = null;
-  window.addEventListener("resize", function(){
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(function(){
-      Object.keys(pdfStates).forEach(function(id){
-        var st = pdfStates[id];
-        if(st.doc && st.fit){ renderPdfPage(id); }
-      });
-    }, 180);
   });
 
   /* ============================================================
