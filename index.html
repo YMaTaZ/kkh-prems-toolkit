@@ -405,7 +405,7 @@
                   <h2 class="card-title">PREMs Resource Guide — PDF preview</h2>
                   <p class="card-sub">Hosted on GitHub Releases (~56 MB). Native PDF viewer — first load may take a moment.</p>
                 </div>
-                <span class="card-badge">PDF.js · single-page render</span>
+                <span class="card-badge">Native PDF viewer</span>
               </div>
 
               <div class="pdf-toolbar" role="toolbar" aria-label="PDF toolbar">
@@ -437,7 +437,7 @@
                   <h2 class="card-title">PREMs Checklist — PDF preview</h2>
                   <p class="card-sub">Single-page checklist — native PDF viewer.</p>
                 </div>
-                <span class="card-badge">PDF.js · single-page render</span>
+                <span class="card-badge">Native PDF viewer</span>
               </div>
 
               <div class="pdf-toolbar" role="toolbar" aria-label="PDF toolbar">
@@ -542,9 +542,7 @@
   /* ------------------------------------------------------------
      【嵌入点：Resource Guide PDF 路径】
      把 "resource-guide.pdf" 替换为真实文件的相对路径或完整 URL。
-     提示：约 56MB 的大文件请部署到支持 HTTP Range 的服务器
-     （IIS / nginx / S3 等），PDF.js 才会按页做 range 请求；
-     用 file:// 直接打开时浏览器仍可能一次读取整个文件。
+     大文件托管在 GitHub Releases（下载直连，站点部署保持轻量）。
   ------------------------------------------------------------ */
   var PDF_SOURCES = {
     guide: "https://github.com/YMaTaZ/kkh-prems-toolkit/releases/download/v1.0-resource-guide/resource-guide.pdf",   // ← Release 资产（仓库外，部署快）
