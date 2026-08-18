@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KKH PREMs Toolkits — Resource Hub</title>
+
+<!--
+================================================================================
+  KKH PREMs Toolkits · 展示网站框架（framework only）
+--------------------------------------------------------------------------------
+  仅允许的外部依赖：PDF.js CDN（见本文件底部内联 JS 中的 PDFJS_LIB）。
+  其余 CSS / JS / SVG 图标全部内联，零框架。
+
+  后续工程师需要替换的真实内容（搜索 【嵌入点】 即可定位）：
+    1. Resource Guide PDF 路径  → JS 中 PDF_SOURCES.guide
+    2. Checklist PDF 路径       → JS 中 PDF_SOURCES.checklist
+    3. Storyboard 图片路径      → JS 中 STORYBOARD_IMAGES
+================================================================================
+-->
+
+<style>
+  :root{
+    --bg:#F5F7FA;
+    --surface:#FFFFFF;
+    --border:#E3E8EF;
+    --shadow:0 1px 3px rgba(30,50,80,.06);
+    --shadow-hover:0 6px 16px rgba(30,50,80,.10);
+    --ink:#24303F;
+    --ink-70:rgba(36,48,63,.70);
+    --ink-50:rgba(36,48,63,.50);
+    --blue-900:#1F4E79;
+    --blue-600:#2E75B6;
+    --blue-50:#EDF4FB;
+    --blue-100:#DCEAF7;
+    --radius:8px;
+    --ease:cubic-bezier(.22,.72,.25,1);
+    --font:"Segoe UI Variable Text","Segoe UI",-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  }
+
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:var(--font);
+    color:var(--ink);
+    background:var(--bg);
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+  button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+  svg{display:block}
+  ::selection{background:rgba(46,117,182,.18)}
+
+  /* ============================ Shell ============================ */
+  .app{display:flex;height:100vh}
+
+  /* ============================ Sidebar ============================ */
+  .sidebar{
+    width:220px;flex:0 0 220px;display:flex;flex-direction:column;
+    background:var(--surface);border-right:1px solid var(--border);
+  }
+  .site-brand{
+    display:flex;align-items:center;gap:11px;
+    padding:20px 18px 18px;border-bottom:1px solid var(--border);
+  }
+  .brand-mark{
+    width:38px;height:38px;flex:0 0 38px;border-radius:8px;
+    background:var(--blue-50);border:1px solid var(--blue-100);
+    color:var(--blue-900);display:grid;place-items:center;
+    font-size:11px;font-weight:700;letter-spacing:.04em;
+  }
+  .site-title{font-size:14px;font-weight:700;color:var(--ink);line-height:1.2}
+  .site-sub{font-size:10.5px;color:var(--ink-50);margin-top:3px;letter-spacing:.05em}
+
+  .nav{flex:1;overflow-y:auto;padding:14px 10px}
+  .nav-group-label{
+    font-size:9.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--ink-50);padding:2px 10px 8px;
+  }
+  .nav-item{
+    position:relative;width:100%;display:flex;align-items:center;gap:11px;
+    padding:11px 12px;border-radius:7px;margin-bottom:4px;
+    font-size:13px;font-weight:600;text-align:left;color:var(--ink-70);
+    border:1px solid transparent;
+    transition:background-color .18s var(--ease),color .18s var(--ease),transform .18s var(--ease);
+  }
+  .nav-item .nav-ico{width:19px;height:19px;flex:0 0 19px;color:var(--ink-50);transition:color .18s var(--ease)}
+  .nav-item:hover{background:var(--blue-50);color:var(--blue-900)}
+  .nav-item:hover .nav-ico{color:var(--blue-600)}
+  .nav-item.active{background:var(--blue-50);color:var(--blue-900)}
+  .nav-item.active .nav-ico{color:var(--blue-600)}
+  /* active 左边条 */
+  .nav-item.active::before{
+    content:"";position:absolute;left:-10px;top:50%;transform:translateY(-50%);
+    width:3px;height:24px;border-radius:0 3px 3px 0;background:var(--blue-600);
+  }
+  .nav-hint{margin-left:auto;font-size:9.5px;font-weight:700;color:var(--blue-600);opacity:0;transition:opacity .18s var(--ease)}
+  .nav-item:hover .nav-hint,.nav-item.active .nav-hint{opacity:1}
+
+  .sidebar-foot{
+    border-top:1px solid var(--border);padding:13px 18px;
+    font-size:10px;color:var(--ink-50);display:flex;justify-content:space-between;align-items:center;
+  }
+  .live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#4C9A6E;margin-right:6px;box-shadow:0 0 0 3px rgba(76,154,110,.14)}
+
+  /* ============================ Workspace ============================ */
+  .workspace{flex:1;min-width:0;display:flex;flex-direction:column}
+  .topbar{
+    flex:0 0 auto;background:var(--surface);border-bottom:1px solid var(--border);
+    padding:14px 26px;
+  }
+  .crumbs{font-size:10px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-50);margin-bottom:3px}
+  .page-title{margin:0;font-size:17px;font-weight:700;color:var(--blue-900)}
+  .title-swap{animation:titleIn .26s var(--ease)}
+  @keyframes titleIn{from{opacity:.3;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+  .main{flex:1;min-height:0;overflow:auto;padding:22px 26px 30px}
+  .main::-webkit-scrollbar{width:9px}
+  .main::-webkit-scrollbar-thumb{background:rgba(31,78,121,.18);border-radius:8px;border:2px solid transparent;background-clip:content-box}
+  .view-shell{max-width:1240px;margin:0 auto}
+
+  .statusbar{
+    flex:0 0 30px;display:flex;align-items:center;justify-content:space-between;gap:20px;
+    background:var(--surface);border-top:1px solid var(--border);
+    padding:0 20px;font-size:10.5px;color:var(--ink-50);
+  }
+  .statusbar .left{display:flex;align-items:center;gap:12px;min-width:0}
+  .statusbar .right{flex:0 0 auto;display:flex;align-items:center;gap:12px}
+  .sens{display:inline-flex;align-items:center;gap:6px;font-weight:650;color:var(--ink-70)}
+  .sens svg{width:12px;height:12px;color:var(--blue-600)}
+  .status-sep{width:1px;height:11px;background:var(--border)}
+
+  /* ============================ View switching ============================ */
+  .view{display:none}
+  .view.active,.view.exiting{display:block}
+  .view.exiting{animation:viewOut 180ms var(--ease) both}
+  .view.active{animation:viewIn 240ms var(--ease) both}
+  @keyframes viewOut{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(8px)}}
+  @keyframes viewIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  /* 卡片/区块错峰入场（80ms stagger） */
+  .anim{opacity:0}
+  .view.active .anim,.view.exiting .anim{opacity:1}
+  .view.active .anim{animation:cardIn .45s var(--ease) both;animation-delay:calc(var(--i,0)*80ms)}
+  @keyframes cardIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+  /* ============================ Generic card ============================ */
+  .card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+  }
+  .card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:16px 20px;border-bottom:1px solid var(--border)}
+  .card-kicker{font-size:9.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--blue-600);margin:0 0 4px}
+  .card-title{margin:0;font-size:14.5px;font-weight:700;color:var(--ink)}
+  .card-sub{margin:4px 0 0;font-size:11.5px;line-height:1.55;color:var(--ink-50)}
+  .card-badge{
+    flex:0 0 auto;font-size:10px;font-weight:700;color:var(--blue-600);
+    background:var(--blue-50);border:1px solid var(--blue-100);
+    padding:4px 9px;border-radius:20px;white-space:nowrap;
+  }
+
+  /* ============================ PDF viewer ============================ */
+  .pdf-card{overflow:hidden}
+  .pdf-toolbar{
+    display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+    padding:12px 16px;border-bottom:1px solid var(--border);background:#FBFCFE;
+  }
+  .tool-btn{
+    height:30px;min-width:30px;padding:0 9px;border-radius:6px;
+    border:1px solid var(--border);background:var(--surface);color:var(--ink-70);
+    display:inline-flex;align-items:center;justify-content:center;gap:6px;
+    font-size:11.5px;font-weight:600;
+    transition:all .18s var(--ease);box-shadow:var(--shadow);
+  }
+  .tool-btn svg{width:14px;height:14px}
+  .tool-btn:hover:not(:disabled){border-color:var(--blue-600);color:var(--blue-600);transform:translateY(-1px)}
+  .tool-btn:disabled{opacity:.38;cursor:not-allowed}
+  .tool-btn.fit{color:var(--blue-600)}
+  .pdf-page-label{
+    min-width:92px;text-align:center;font-size:11.5px;font-weight:600;color:var(--ink-70);
+    font-variant-numeric:tabular-nums;
+  }
+  .pdf-zoom-label{
+    min-width:46px;text-align:center;font-size:11.5px;font-weight:600;color:var(--ink-70);
+    font-variant-numeric:tabular-nums;
+  }
+  .toolbar-sep{width:1px;height:20px;background:var(--border)}
+  .toolbar-spacer{flex:1}
+
+  .pdf-stage{
+    min-height:560px;max-height:calc(100vh - 280px);overflow:auto;
+    background:#F5F7FA;padding:26px 22px;display:flex;justify-content:center;align-items:flex-start;
+  }
+  .pdf-stage::-webkit-scrollbar{width:9px;height:9px}
+  .pdf-stage::-webkit-scrollbar-thumb{background:rgba(31,78,121,.18);border-radius:8px}
+  .pdf-canvas{
+    background:#fff;border:1px solid var(--border);border-radius:4px;
+    box-shadow:0 4px 14px rgba(30,50,80,.10);display:none;
+  }
+  .pdf-notice{
+    max-width:560px;text-align:center;color:var(--ink-50);padding:34px 30px;
+    background:var(--surface);border:1px dashed var(--border);border-radius:var(--radius);
+  }
+  .pdf-notice .ico{width:38px;height:38px;margin:0 auto 12px;border-radius:10px;background:var(--blue-50);display:grid;place-items:center;color:var(--blue-600)}
+  .pdf-notice .ico svg{width:19px;height:19px}
+  .pdf-notice b{display:block;font-size:13px;color:var(--ink);margin-bottom:6px}
+  .pdf-notice code{
+    display:inline-block;margin-top:10px;padding:5px 9px;border-radius:6px;
+    background:#F5F7FA;border:1px solid var(--border);font-size:11px;color:var(--blue-900);
+  }
+  .pdf-notice p{margin:0 0 6px;font-size:11.5px;line-height:1.6}
+
+  /* ============================ Storyboard ============================ */
+  .story-intro{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+  .story-intro h2{margin:0 0 5px;font-size:15px;font-weight:700;color:var(--blue-900)}
+  .story-intro p{margin:0;font-size:11.5px;color:var(--ink-50);max-width:560px;line-height:1.55}
+  .story-stage{display:flex;flex-direction:column;align-items:center;max-width:860px;margin:0 auto}
+  .story-frame{
+    width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+    box-shadow:var(--shadow);overflow:hidden;
+    transition:transform .22s var(--ease),box-shadow .22s var(--ease),border-color .22s var(--ease),opacity .16s var(--ease);
+  }
+  .story-frame:hover{transform:translateY(-3px);box-shadow:var(--shadow-hover);border-color:var(--blue-100)}
+  .story-frame.switching{opacity:0;transform:translateY(8px);pointer-events:none}
+  .story-frame.entering{animation:storyIn .24s var(--ease) both}
+  @keyframes storyIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  .story-thumb{
+    position:relative;aspect-ratio:16/10;background:#F5F7FA;overflow:hidden;
+    border-bottom:1px solid var(--border);cursor:pointer;
+  }
+  .story-thumb img{width:100%;height:100%;object-fit:contain;display:block;background:#fff}
+  .thumb-placeholder{
+    position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+    color:var(--ink-50);
+  }
+  .thumb-placeholder .ph-num{
+    width:52px;height:52px;border-radius:12px;background:var(--surface);
+    border:1px solid var(--border);display:grid;place-items:center;
+    font-size:19px;font-weight:700;color:var(--blue-600);
+  }
+  .thumb-placeholder .ph-file{font-size:10.5px;font-weight:600;letter-spacing:.06em}
+  .story-next-cue{
+    position:absolute;right:14px;bottom:12px;display:inline-flex;align-items:center;gap:5px;
+    font-size:10.5px;font-weight:700;color:var(--blue-600);
+    background:rgba(255,255,255,.9);border:1px solid var(--border);border-radius:20px;
+    padding:5px 10px;opacity:.85;transition:opacity .18s var(--ease),transform .18s var(--ease);
+    pointer-events:none;
+  }
+  .story-next-cue svg{width:12px;height:12px}
+  .story-thumb:hover .story-next-cue{opacity:1;transform:translateX(2px)}
+  .story-caption{padding:14px 18px 15px}
+  .story-caption h3{margin:0 0 4px;font-size:13.5px;font-weight:700;color:var(--ink)}
+  .story-caption p{margin:0;font-size:11px;color:var(--ink-50);line-height:1.55}
+  .story-nav{display:flex;align-items:center;gap:12px;margin-top:14px}
+  .story-arrow{
+    width:36px;height:36px;border-radius:8px;display:grid;place-items:center;
+    background:var(--surface);border:1px solid var(--border);color:var(--ink-70);
+    box-shadow:var(--shadow);transition:all .18s var(--ease);
+  }
+  .story-arrow svg{width:15px;height:15px}
+  .story-arrow:hover{border-color:var(--blue-600);color:var(--blue-600);transform:translateY(-1px)}
+  .story-counter{min-width:52px;text-align:center;font-size:11.5px;font-weight:700;color:var(--ink-70);font-variant-numeric:tabular-nums}
+  .story-hint{font-size:10.5px;color:var(--ink-50)}
+  .story-hint b{color:var(--blue-600)}
+
+  /* ============================ Responsive ============================ */
+  @media (max-width:860px){
+    .app{flex-direction:column}
+    .sidebar{
+      width:100%;flex:0 0 58px;flex-direction:row;align-items:center;
+      border-right:0;border-bottom:1px solid var(--border);padding:0 10px;
+    }
+    .site-brand{padding:0 8px 0 2px;border-bottom:0;gap:9px}
+    .brand-mark{width:34px;height:34px;flex-basis:34px}
+    .site-title{font-size:12.5px}
+    .site-sub{display:none}
+    .nav{display:flex;flex:1;overflow-x:auto;overflow-y:hidden;padding:0;gap:4px;margin-left:10px}
+    .nav-group-label{display:none}
+    .nav-item{
+      width:auto;flex:0 0 auto;padding:9px 11px;margin:0;font-size:12px;justify-content:center;
+    }
+    .nav-item .nav-label{display:none}
+    .nav-item.active::before{left:10px;right:10px;top:auto;bottom:-1px;width:auto;height:3px;transform:none;border-radius:3px 3px 0 0}
+    .nav-hint{display:none}
+    .sidebar-foot{display:none}
+    .topbar{padding:11px 16px}
+    .main{padding:16px 14px 24px}
+    .card-head{padding:14px 16px}
+    .pdf-stage{min-height:420px;max-height:calc(100vh - 260px)}
+    .statusbar .right .hide-narrow{display:none}
+  }
+
+  /* ============================ Reduced motion ============================ */
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{
+      animation-duration:.01ms !important;
+      animation-iteration-count:1 !important;
+      transition-duration:.01ms !important;
+    }
+    .anim{opacity:1 !important}
+  }
+</style>
+</head>
+<body>
+  <!-- Inline SVG icon library (zero dependency) -->
+  <svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0" aria-hidden="true">
+    <defs>
+      <symbol id="i-doc" viewBox="0 0 24 24">
+        <path d="M6 3h8l4 4v14H6V3Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+        <path d="M14 3v4h4M9 12h6M9 16h6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      </symbol>
+      <symbol id="i-check" viewBox="0 0 24 24">
+        <rect x="4" y="3.5" width="16" height="17" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.7"/>
+        <path d="m8 12 2.6 2.6L16.5 8.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </symbol>
+      <symbol id="i-gallery" viewBox="0 0 24 24">
+        <rect x="3.5" y="4.5" width="17" height="15" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/>
+        <circle cx="9" cy="10" r="1.6" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <path d="m6 17 4.5-4.5 3.5 3.5 2.5-2.5L20 17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </symbol>
+      <symbol id="i-chev-l" viewBox="0 0 24 24"><path d="M14.5 5.5 8 12l6.5 6.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-chev-r" viewBox="0 0 24 24"><path d="m9.5 5.5 6.5 6.5-6.5 6.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5.5 12h13" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5.5v13M5.5 12h13" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></symbol>
+      <symbol id="i-fit" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-shield" viewBox="0 0 24 24">
+        <path d="M12 2.8 4.5 5.6v6c0 4.6 3 7.7 7.5 9.6 4.5-1.9 7.5-5 7.5-9.6v-6L12 2.8Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+        <path d="m8.8 12 2.2 2.2 4.4-4.6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+      </symbol>
+      <symbol id="i-info" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.7"/>
+        <path d="M12 11v5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        <circle cx="12" cy="8" r="1.1" fill="currentColor"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <div class="app">
+    <!-- ============================================================
+         LEFT NAVIGATION
+    ============================================================ -->
+    <aside class="sidebar">
+      <div class="site-brand">
+        <div class="brand-mark" aria-hidden="true">KKH</div>
+        <div>
+          <div class="site-title">PREMs Toolkits</div>
+          <div class="site-sub">Patient Experience</div>
+        </div>
+      </div>
+
+      <nav class="nav" aria-label="Toolkit sections">
+        <div class="nav-group-label">Toolkit</div>
+        <button class="nav-item active" data-view="resource-guide" aria-current="page">
+          <svg class="nav-ico"><use href="#i-doc"></use></svg>
+          <span class="nav-label">Resource Guide</span>
+          <span class="nav-hint">PDF</span>
+        </button>
+        <button class="nav-item" data-view="checklist">
+          <svg class="nav-ico"><use href="#i-check"></use></svg>
+          <span class="nav-label">Checklist</span>
+          <span class="nav-hint">PDF</span>
+        </button>
+        <button class="nav-item" data-view="storyboard">
+          <svg class="nav-ico"><use href="#i-gallery"></use></svg>
+          <span class="nav-label">Storyboard</span>
+          <span class="nav-hint">7</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-foot">
+        <span><span class="live-dot"></span>Framework v0.1</span>
+        <span>EN</span>
+      </div>
+    </aside>
+
+    <!-- ============================================================
+         WORKSPACE
+    ============================================================ -->
+    <section class="workspace">
+      <!-- Top title bar -->
+      <header class="topbar">
+        <div class="crumbs" id="crumbs">PREMs Toolkits / Resource Guide</div>
+        <h1 class="page-title" id="pageTitle">Resource Guide</h1>
+      </header>
+
+      <!-- Main content -->
+      <main class="main" id="mainScroll">
+        <div class="view-shell">
+
+          <!-- ============================================================
+               VIEW 1 · RESOURCE GUIDE
+               【嵌入点：Resource Guide PDF 路径】
+               对应 JS 配置：PDF_SOURCES.guide（当前占位 "resource-guide.pdf"）
+          ============================================================ -->
+          <section class="view active" id="view-resource-guide">
+            <div class="card pdf-card anim">
+              <div class="card-head">
+                <div>
+                  <p class="card-kicker">Resource Guide</p>
+                  <h2 class="card-title">PREMs Resource Guide — PDF preview</h2>
+                  <p class="card-sub">Large PDF (~56 MB). Only the visible page is rendered by PDF.js; the whole document is never pre-rendered.</p>
+                </div>
+                <span class="card-badge">PDF.js · single-page render</span>
+              </div>
+
+              <div class="pdf-toolbar" role="toolbar" aria-label="PDF toolbar">
+                <button class="tool-btn" data-action="prev" aria-label="Previous page">
+                  <svg><use href="#i-chev-l"></use></svg> Prev
+                </button>
+                <button class="tool-btn" data-action="next" aria-label="Next page">
+                  Next <svg><use href="#i-chev-r"></use></svg>
+                </button>
+                <span class="toolbar-sep"></span>
+                <span class="pdf-page-label">Page – / –</span>
+                <span class="toolbar-sep"></span>
+                <button class="tool-btn fit" data-action="fit" aria-label="Fit to width">
+                  <svg><use href="#i-fit"></use></svg> Fit width
+                </button>
+                <button class="tool-btn" data-action="zoom-out" aria-label="Zoom out">
+                  <svg><use href="#i-minus"></use></svg>
+                </button>
+                <span class="pdf-zoom-label">—</span>
+                <button class="tool-btn" data-action="zoom-in" aria-label="Zoom in">
+                  <svg><use href="#i-plus"></use></svg>
+                </button>
+                <span class="toolbar-spacer"></span>
+                <span class="card-badge">resource-guide.pdf</span>
+              </div>
+
+              <div class="pdf-stage" id="pdf-guide">
+                <div class="pdf-notice">
+                  <div class="ico"><svg><use href="#i-info"></use></svg></div>
+                  <b>Loading PDF.js…</b>
+                  <p>If this message persists, check the network connection to the PDF.js CDN.</p>
+                  <code id="pdf-guide-path">resource-guide.pdf</code>
+                </div>
+                <canvas class="pdf-canvas" aria-label="PDF page preview"></canvas>
+              </div>
+            </div>
+          </section>
+
+          <!-- ============================================================
+               VIEW 2 · CHECKLIST
+               【嵌入点：Checklist PDF 路径】
+               对应 JS 配置：PDF_SOURCES.checklist（当前占位 "checklist.pdf"）
+          ============================================================ -->
+          <section class="view" id="view-checklist">
+            <div class="card pdf-card anim">
+              <div class="card-head">
+                <div>
+                  <p class="card-kicker">Checklist</p>
+                  <h2 class="card-title">PREMs Checklist — PDF preview</h2>
+                  <p class="card-sub">Same single-page PDF.js viewer. Swap the placeholder path when the real file is available.</p>
+                </div>
+                <span class="card-badge">PDF.js · single-page render</span>
+              </div>
+
+              <div class="pdf-toolbar" role="toolbar" aria-label="PDF toolbar">
+                <button class="tool-btn" data-action="prev" aria-label="Previous page">
+                  <svg><use href="#i-chev-l"></use></svg> Prev
+                </button>
+                <button class="tool-btn" data-action="next" aria-label="Next page">
+                  Next <svg><use href="#i-chev-r"></use></svg>
+                </button>
+                <span class="toolbar-sep"></span>
+                <span class="pdf-page-label">Page – / –</span>
+                <span class="toolbar-sep"></span>
+                <button class="tool-btn fit" data-action="fit" aria-label="Fit to width">
+                  <svg><use href="#i-fit"></use></svg> Fit width
+                </button>
+                <button class="tool-btn" data-action="zoom-out" aria-label="Zoom out">
+                  <svg><use href="#i-minus"></use></svg>
+                </button>
+                <span class="pdf-zoom-label">—</span>
+                <button class="tool-btn" data-action="zoom-in" aria-label="Zoom in">
+                  <svg><use href="#i-plus"></use></svg>
+                </button>
+                <span class="toolbar-spacer"></span>
+                <span class="card-badge">checklist.pdf</span>
+              </div>
+
+              <div class="pdf-stage" id="pdf-checklist">
+                <div class="pdf-notice">
+                  <div class="ico"><svg><use href="#i-info"></use></svg></div>
+                  <b>Loading PDF.js…</b>
+                  <p>If this message persists, check the network connection to the PDF.js CDN.</p>
+                  <code id="pdf-checklist-path">checklist.pdf</code>
+                </div>
+                <canvas class="pdf-canvas" aria-label="PDF page preview"></canvas>
+              </div>
+            </div>
+          </section>
+
+          <!-- ============================================================
+               VIEW 3 · STORYBOARD
+               【嵌入点：Storyboard 图片路径】
+               对应 JS 配置：STORYBOARD_IMAGES
+               （当前占位 storyboard/1.png ~ storyboard/7.png）
+          ============================================================ -->
+          <section class="view" id="view-storyboard">
+            <div class="story-intro anim">
+              <div>
+                <h2>Storyboard — 7 frames</h2>
+                <p>Click the image (or use the arrows) to move to the next frame. Real PNGs will replace the placeholders automatically.</p>
+              </div>
+              <span class="story-hint">Click image for <b>next</b> →</span>
+            </div>
+
+            <!-- 单帧切换：JS 根据 STORYBOARD_IMAGES 更新当前帧内容 -->
+            <div class="story-stage anim">
+              <div class="story-frame" id="storyFrame">
+                <div class="story-thumb" id="storyThumb" role="button" tabindex="0" aria-label="Next storyboard image">
+                  <div class="thumb-placeholder" id="storyPlaceholder">
+                    <span class="ph-num">1</span>
+                    <span class="ph-file">PLACEHOLDER</span>
+                  </div>
+                  <img id="storyImage" alt="Storyboard frame" style="display:none">
+                  <span class="story-next-cue">Next <svg><use href="#i-chev-r"></use></svg></span>
+                </div>
+                <div class="story-caption">
+                  <h3 id="storyTitle">1 · TOO MUCH DATA</h3>
+                  <p id="storyNote">Placeholder caption — replace with real title</p>
+                </div>
+              </div>
+
+              <div class="story-nav">
+                <button class="story-arrow" id="storyPrev" aria-label="Previous image">
+                  <svg><use href="#i-chev-l"></use></svg>
+                </button>
+                <span class="story-counter" id="storyCounter">1 / 7</span>
+                <button class="story-arrow" id="storyNext" aria-label="Next image">
+                  <svg><use href="#i-chev-r"></use></svg>
+                </button>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </main>
+
+      <!-- Bottom status bar -->
+      <footer class="statusbar">
+        <div class="left">
+          <span class="sens">
+            <svg><use href="#i-shield"></use></svg>
+            Restricted · Sensitive (Normal)
+          </span>
+          <span class="status-sep"></span>
+          <span>KKH · SingHealth</span>
+          <span class="status-sep"></span>
+          <span>PREMs Toolkits prototype</span>
+        </div>
+        <div class="right">
+          <span class="hide-narrow">Framework preview</span>
+          <span class="status-sep hide-narrow"></span>
+          <span id="clock">Local preview</span>
+        </div>
+      </footer>
+    </section>
+  </div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============================================================
+     0. CONFIG — 所有真实内容路径集中在这里，后续工程师只改这里
+  ============================================================ */
+
+  /* ------------------------------------------------------------
+     【嵌入点：Resource Guide PDF 路径】
+     把 "resource-guide.pdf" 替换为真实文件的相对路径或完整 URL。
+     提示：约 56MB 的大文件请部署到支持 HTTP Range 的服务器
+     （IIS / nginx / S3 等），PDF.js 才会按页做 range 请求；
+     用 file:// 直接打开时浏览器仍可能一次读取整个文件。
+  ------------------------------------------------------------ */
+  var PDF_SOURCES = {
+    guide: "resource-guide.pdf",   // ← Resource Guide PDF
+    checklist: "checklist.pdf"     // ← Checklist PDF
+  };
+
+  /* ------------------------------------------------------------
+     【嵌入点：Storyboard 图片路径】
+     把 src 替换为真实图片，例如：
+       { src: "storyboard/1.png", title: "1 · TOO MUCH DATA", note: "真实说明文案" }
+     图片不存在时灰色占位块会自动保留，所以框架可独立运行。
+  ------------------------------------------------------------ */
+  var STORYBOARD_IMAGES = [
+    { src: "storyboard/1.png", title: "1 · TOO MUCH DATA",            note: "What should I bring to the huddle?" },
+    { src: "storyboard/2.png", title: "2 · FIND THE GUIDE",           note: "A clear path from reading to action." },
+    { src: "storyboard/3.png", title: "3 · FIND THE FOCUS",           note: "Strengths: maintain what works. Opportunities: improve what matters most." },
+    { src: "storyboard/4.png", title: "4 · FIND THE PRINTABLE CHECKLIST", note: "Turn one focus area into one action." },
+    { src: "storyboard/5.png", title: "5 · PRINT IT",                 note: "Ready for the huddle." },
+    { src: "storyboard/6.png", title: "6 · CHECK IT",                 note: "One priority. One action." },
+    { src: "storyboard/7.png", title: "7 · ACT TOGETHER",            note: "Agree. Assign. Re-check." }
+  ];
+
+  /* PDF.js 本地自托管（lib/ 目录），GitHub Pages 无需外部 CDN */
+  var PDFJS_LIB = "lib/pdf.min.js";
+  var PDFJS_WORKER = "lib/pdf.worker.min.js";
+
+  /* ============================================================
+     1. Utilities
+  ============================================================ */
+  var $  = function(s,c){ return (c||document).querySelector(s); };
+  var $$ = function(s,c){ return Array.prototype.slice.call((c||document).querySelectorAll(s)); };
+  var reducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var mainScroll = $("#mainScroll");
+
+  /* ============================================================
+     2. Navigation — 三个板块切换
+  ============================================================ */
+  var PAGES = {
+    "resource-guide": { title: "Resource Guide", crumbs: "PREMs Toolkits / Resource Guide" },
+    "checklist":      { title: "Checklist",      crumbs: "PREMs Toolkits / Checklist" },
+    "storyboard":     { title: "Storyboard",     crumbs: "PREMs Toolkits / Storyboard" }
+  };
+
+  function stagger(view){
+    $$(".anim", view).forEach(function(el, i){
+      el.style.setProperty("--i", i);
+    });
+  }
+
+  function navigate(id){
+    var next = $("#view-" + id);
+    if(!next) return;
+    var current = $(".view.active");
+    if(current === next){
+      mainScroll.scrollTop = 0;
+      return;
+    }
+
+    /* nav state */
+    $$(".nav-item[data-view]").forEach(function(btn){
+      var on = btn.getAttribute("data-view") === id;
+      btn.classList.toggle("active", on);
+      if(on){ btn.setAttribute("aria-current","page"); } else { btn.removeAttribute("aria-current"); }
+    });
+
+    /* top bar */
+    var title = $("#pageTitle");
+    title.classList.remove("title-swap"); void title.offsetWidth; title.classList.add("title-swap");
+    title.textContent = PAGES[id].title;
+    $("#crumbs").textContent = PAGES[id].crumbs;
+
+    /* view transition: old fade out + 8px down → new cards stagger in */
+    current.classList.remove("active");
+    current.classList.add("exiting");
+    setTimeout(function(){
+      current.classList.remove("exiting");
+      stagger(next);
+      next.classList.add("active");
+      mainScroll.scrollTop = 0;
+
+      /* 首次进入 PDF 视图时才触发加载（只渲染当前页） */
+      if(id === "resource-guide") activatePdf("pdf-guide");
+      if(id === "checklist")      activatePdf("pdf-checklist");
+    }, reducedMotion ? 0 : 180);
+  }
+
+  $$(".nav-item[data-view]").forEach(function(btn){
+    btn.addEventListener("click", function(){ navigate(btn.getAttribute("data-view")); });
+  });
+
+  /* ============================================================
+     3. Storyboard — 7 张图，点击切换下一张（无滑块）
+  ============================================================ */
+  var storyIndex = 0;
+  var storyLock = false;
+  var storyImageToken = 0;
+
+  function initStoryboard(){
+    var frame   = $("#storyFrame");
+    var thumb   = $("#storyThumb");
+    var img     = $("#storyImage");
+    var ph      = $("#storyPlaceholder");
+    var counter = $("#storyCounter");
+    var titleEl = $("#storyTitle");
+    var noteEl  = $("#storyNote");
+
+    /* 图片存在 → 显示；缺失 → 保留灰色占位（onerror）。
+       token 防止快速切换时旧图片的 load/error 覆盖新图片状态。 */
+    img.addEventListener("load", function(){
+      if(parseInt(img.getAttribute("data-token"), 10) === storyImageToken){
+        img.style.display = "block";
+        ph.style.display = "none";
+      }
+    });
+    img.addEventListener("error", function(){
+      if(parseInt(img.getAttribute("data-token"), 10) === storyImageToken){
+        img.style.display = "none";
+        ph.style.display = "flex";
+      }
+    });
+
+    function renderStory(i){
+      var item = STORYBOARD_IMAGES[i];
+      storyImageToken += 1;
+
+      /* 【嵌入点】storyboard 图片实际请求发生在这里（item.src） */
+      img.setAttribute("data-token", String(storyImageToken));
+      img.style.display = "none";
+      img.alt = item.title;
+      img.src = item.src;
+
+      ph.style.display = "flex";
+      $(".ph-num", ph).textContent = String(i + 1);
+      $(".ph-file", ph).textContent = "PLACEHOLDER · " + item.src.replace(/\.\w+$/, "").toUpperCase();
+
+      titleEl.textContent = item.title;
+      noteEl.textContent = item.note;
+      counter.textContent = (i + 1) + " / " + STORYBOARD_IMAGES.length;
+    }
+
+    function storyGo(delta){
+      if(storyLock) return;
+      var next = (storyIndex + delta + STORYBOARD_IMAGES.length) % STORYBOARD_IMAGES.length;
+      if(next === storyIndex) return;
+      storyLock = true;
+      frame.classList.remove("entering");
+      frame.classList.add("switching");
+
+      setTimeout(function(){
+        storyIndex = next;
+        renderStory(storyIndex);
+        frame.classList.remove("switching");
+        void frame.offsetWidth; /* restart entry animation */
+        frame.classList.add("entering");
+        setTimeout(function(){
+          frame.classList.remove("entering");
+          storyLock = false;
+        }, reducedMotion ? 0 : 240);
+      }, reducedMotion ? 0 : 160);
+    }
+
+    /* 点击图片 = 下一张（循环到最后一张时回到第 1 张） */
+    thumb.addEventListener("click", function(){ storyGo(1); });
+    thumb.addEventListener("keydown", function(e){
+      if(e.key === "Enter" || e.key === " "){ e.preventDefault(); storyGo(1); }
+    });
+    $("#storyNext").addEventListener("click", function(){ storyGo(1); });
+    $("#storyPrev").addEventListener("click", function(){ storyGo(-1); });
+
+    /* 键盘左右方向键（仅故事板视图激活时） */
+    document.addEventListener("keydown", function(e){
+      var active = $("#view-storyboard").classList.contains("active");
+      if(!active) return;
+      var tag = (e.target && e.target.tagName) ? e.target.tagName : "";
+      if(tag === "INPUT" || tag === "TEXTAREA") return;
+      if(e.key === "ArrowRight"){ e.preventDefault(); storyGo(1); }
+      if(e.key === "ArrowLeft"){ e.preventDefault(); storyGo(-1); }
+    });
+
+    renderStory(0);
+  }
+
+  /* ============================================================
+     4. PDF.js — 按需加载，每次只渲染当前页
+  ============================================================ */
+  var pdfStates = {
+    "pdf-guide":     { page: 1, scale: 1, fit: true, doc: null, task: null, loading: false, loaded: false },
+    "pdf-checklist": { page: 1, scale: 1, fit: true, doc: null, task: null, loading: false, loaded: false }
+  };
+
+  var pdfLibLoading = false;
+  var pdfLibCallbacks = [];
+  function ensurePdfLib(cb){
+    if(window.pdfjsLib){ cb(); return; }
+    /* library 还在加载中时也把回调排队，避免快速切换视图丢回调 */
+    pdfLibCallbacks.push(cb);
+    if(pdfLibLoading) return;
+    pdfLibLoading = true;
+
+    var script = document.createElement("script");
+    script.src = PDFJS_LIB;
+    script.onload = function(){
+      try{
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER;
+        var queue = pdfLibCallbacks.splice(0);
+        queue.forEach(function(fn){ fn(); });
+      }catch(err){
+        pdfFailAll("PDF.js initialisation failed.");
+      }
+    };
+    script.onerror = function(){
+      pdfLibLoading = false;
+      pdfLibCallbacks = [];
+      pdfFailAll("PDF.js CDN could not be loaded — network access is required.");
+    };
+    document.head.appendChild(script);
+  }
+
+  function pdfFailAll(msg){
+    Object.keys(pdfStates).forEach(function(id){
+      pdfStates[id].loading = false; /* 允许用户重新进入视图时重试 */
+      showNotice(id, "PDF.js unavailable", msg, "");
+    });
+  }
+
+  function viewerIdFor(viewName){
+    return viewName === "resource-guide" ? "pdf-guide" : "pdf-checklist";
+  }
+
+  /* 进入视图时调用：只初始化一次，之后切换回来不再重新加载 */
+  function activatePdf(viewName){
+    var id = viewerIdFor(viewName);
+    var st = pdfStates[id];
+    if(st.loaded || st.loading) return;
+    st.loading = true;
+
+    ensurePdfLib(function(){
+      var src = viewName === "resource-guide" ? PDF_SOURCES.guide : PDF_SOURCES.checklist;
+      showNotice(id, "Opening PDF…", src, src);
+
+      window.pdfjsLib.getDocument({
+        url: src,
+        /* 大文件：只按需拉取当前页所需 range，不做整本预渲染。
+           如需更强控制可加 rangeChunkSize（单位 bytes），例如 131072。 */
+        disableAutoFetch: false
+      }).promise.then(function(doc){
+        st.doc = doc;
+        st.loaded = true;
+        st.loading = false;
+        updatePdfChrome(id);
+        renderPdfPage(id);
+      }).catch(function(err){
+        st.loading = false;
+        showNotice(
+          id,
+          "PDF not found at placeholder path",
+          "Replace the placeholder path in PDF_SOURCES with the real file, then reload. (" + (err && err.message ? err.message : "load error") + ")",
+          src
+        );
+      });
+    });
+  }
+
+  /* 初始默认视图是 Resource Guide */
+  activatePdf("resource-guide");
+
+  function showNotice(id, title, text, path){
+    var stage = $("#" + id);
+    if(!stage) return;
+    var canvas = $(".pdf-canvas", stage);
+    var notice = $(".pdf-notice", stage);
+    canvas.style.display = "none";
+    if(notice){
+      $("b", notice).textContent = title;
+      $("p", notice).textContent = text;
+      var code = $("code", notice);
+      if(code && path !== null && path !== undefined){ code.textContent = path; }
+    } else {
+      var el = document.createElement("div");
+      el.className = "pdf-notice";
+      el.innerHTML = "<div class=\"ico\"><svg><use href=\"#i-info\"></use></svg></div><b></b><p></p><code></code>";
+      $("b", el).textContent = title;
+      $("p", el).textContent = text;
+      $("code", el).textContent = path || "";
+      stage.appendChild(el);
+    }
+    /* chrome: reset controls while loading/error */
+    $$(".tool-btn", stage.parentElement).forEach(function(b){ b.disabled = true; });
+    $(".pdf-page-label", stage.parentElement).textContent = "Page – / –";
+    $(".pdf-zoom-label", stage.parentElement).textContent = "—";
+  }
+
+  function updatePdfChrome(id){
+    var st = pdfStates[id];
+    var root = $("#" + id).closest(".pdf-card");
+    $(".pdf-page-label", root).textContent = "Page " + st.page + " / " + st.doc.numPages;
+    $(".pdf-zoom-label", root).textContent = Math.round(st.scale * 100) + "%";
+    $$(".tool-btn", root).forEach(function(b){
+      b.disabled = false;
+    });
+    $('[data-action="prev"]', root).disabled = (st.page <= 1);
+    $('[data-action="next"]', root).disabled = (st.page >= st.doc.numPages);
+  }
+
+  /* 核心：只获取 + 渲染当前页。页码变化时取消上一次未完成的 render task。 */
+  function renderPdfPage(id){
+    var st = pdfStates[id];
+    if(!st.doc) return;
+    if(st.task){ try{ st.task.cancel(); }catch(e){} st.task = null; }
+
+    var stage = $("#" + id);
+    var canvas = $(".pdf-canvas", stage);
+    var notice = $(".pdf-notice", stage);
+
+    st.doc.getPage(st.page).then(function(page){
+      var base = page.getViewport({ scale: 1 });
+
+      /* fit width：按 stage 可用宽度计算 scale */
+      if(st.fit){
+        st.scale = Math.min(4, Math.max(0.35, (stage.clientWidth - 44) / base.width));
+        st.scale = Math.round(st.scale * 100) / 100;
+      }
+
+      /* devicePixelRatio 提升清晰度，但限制在 2 防止 56MB 大页爆内存 */
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      var viewport = page.getViewport({ scale: st.scale * dpr });
+
+      canvas.width = Math.floor(viewport.width);
+      canvas.height = Math.floor(viewport.height);
+      canvas.style.width = Math.floor(viewport.width / dpr) + "px";
+      canvas.style.height = Math.floor(viewport.height / dpr) + "px";
+      canvas.style.display = "block";
+      if(notice) notice.style.display = "none";
+
+      var ctx = canvas.getContext("2d", { alpha: false });
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      st.task = page.render({ canvasContext: ctx, viewport: viewport });
+      st.task.promise.then(function(){
+        st.task = null;
+        updatePdfChrome(id);
+      }).catch(function(){ /* render cancelled — expected on rapid page flip */ });
+    }).catch(function(err){
+      showNotice(id, "Could not render this page", (err && err.message ? err.message : ""), PDF_SOURCES[viewNameFromId(id)]);
+    });
+  }
+
+  function viewNameFromId(id){ return id === "pdf-guide" ? "guide" : "checklist"; }
+
+  /* Toolbar actions（事件委托，两个 PDF viewer 共用） */
+  document.addEventListener("click", function(e){
+    var btn = e.target.closest(".tool-btn");
+    if(!btn || btn.disabled) return;
+    var card = btn.closest(".pdf-card");
+    var stage = $(".pdf-stage", card);
+    var id = stage.id;
+    var st = pdfStates[id];
+    if(!st || !st.doc) return;
+    var action = btn.getAttribute("data-action");
+
+    if(action === "prev" && st.page > 1){
+      st.page -= 1; renderPdfPage(id);
+    } else if(action === "next" && st.page < st.doc.numPages){
+      st.page += 1; renderPdfPage(id);
+    } else if(action === "zoom-in"){
+      st.fit = false; st.scale = Math.min(4, Math.round((st.scale + 0.15) * 100) / 100); renderPdfPage(id);
+    } else if(action === "zoom-out"){
+      st.fit = false; st.scale = Math.max(0.35, Math.round((st.scale - 0.15) * 100) / 100); renderPdfPage(id);
+    } else if(action === "fit"){
+      st.fit = true; renderPdfPage(id);
+    }
+    updatePdfChrome(id);
+  });
+
+  /* 窗口尺寸变化：fit 模式下重新适配 */
+  var resizeTimer = null;
+  window.addEventListener("resize", function(){
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function(){
+      Object.keys(pdfStates).forEach(function(id){
+        var st = pdfStates[id];
+        if(st.doc && st.fit){ renderPdfPage(id); }
+      });
+    }, 180);
+  });
+
+  /* ============================================================
+     5. Init
+  ============================================================ */
+  initStoryboard();
+  stagger($(".view.active"));
+
+  /* deep link 支持：index.html#storyboard */
+  var initialHash = (location.hash || "").replace("#", "");
+  if(PAGES[initialHash]){ navigate(initialHash); }
+
+  var clock = $("#clock");
+  if(clock){
+    setInterval(function(){
+      var d = new Date();
+      clock.textContent = ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2) + " local preview";
+    }, 20000);
+  }
+})();
+</script>
+</body>
+</html>
