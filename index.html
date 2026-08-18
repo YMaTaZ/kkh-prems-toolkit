@@ -7,15 +7,15 @@
 
 <!--
 ================================================================================
-  KKH PREMs Toolkits · 展示网站（resource hub）
+  KKH PREMs Toolkits · 展示网站框架（framework only）
 --------------------------------------------------------------------------------
-  零外部依赖：PDF 预览用浏览器原生 iframe（Resource Guide / Checklist 托管于 GitHub Releases）。
-  CSS / JS / SVG 图标全部内联。
+  仅允许的外部依赖：PDF.js CDN（见本文件底部内联 JS 中的 PDFJS_LIB）。
+  其余 CSS / JS / SVG 图标全部内联，零框架。
 
-  真实内容配置（搜索 PDF_SOURCES / STORYBOARD_IMAGES 即可定位）：
-    1. Resource Guide PDF  → JS 中 PDF_SOURCES.guide（GitHub Releases 资产 URL）
-    2. Checklist PDF       → JS 中 PDF_SOURCES.checklist（GitHub Releases 资产 URL）
-    3. Storyboard 图片     → JS 中 STORYBOARD_IMAGES（storyboard/1.png ~ 7.png）
+  后续工程师需要替换的真实内容（搜索 【嵌入点】 即可定位）：
+    1. Resource Guide PDF 路径  → JS 中 PDF_SOURCES.guide
+    2. Checklist PDF 路径       → JS 中 PDF_SOURCES.checklist
+    3. Storyboard 图片路径      → JS 中 STORYBOARD_IMAGES
 ================================================================================
 -->
 
@@ -178,25 +178,48 @@
   .tool-btn svg{width:14px;height:14px}
   .tool-btn:hover:not(:disabled){border-color:var(--blue-600);color:var(--blue-600);transform:translateY(-1px)}
   .tool-btn:disabled{opacity:.38;cursor:not-allowed}
+  .tool-btn.fit{color:var(--blue-600)}
+  .pdf-page-label{
+    min-width:92px;text-align:center;font-size:11.5px;font-weight:600;color:var(--ink-70);
+    font-variant-numeric:tabular-nums;
+  }
+  .pdf-zoom-label{
+    min-width:46px;text-align:center;font-size:11.5px;font-weight:600;color:var(--ink-70);
+    font-variant-numeric:tabular-nums;
+  }
+  .toolbar-sep{width:1px;height:20px;background:var(--border)}
   .toolbar-spacer{flex:1}
 
   .pdf-stage{
-    position:relative;
-    background:#F5F7FA;overflow:hidden;
+    min-height:560px;max-height:calc(100vh - 280px);overflow:auto;
+    background:#F5F7FA;padding:26px 22px;display:flex;justify-content:center;align-items:flex-start;
   }
-  .pdf-iframe{
-    display:block;width:100%;height:calc(100vh - 320px);min-height:560px;
-    border:0;background:#fff;
-  }
-  .pdf-loading{
-    position:absolute;inset:0;z-index:2;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
-    background:#F5F7FA;color:var(--ink-70);font-size:13.5px;font-weight:600;
-  }
-  .pdf-loading-sub{font-size:11px;color:var(--ink-50);font-weight:400}
   .pdf-stage::-webkit-scrollbar{width:9px;height:9px}
   .pdf-stage::-webkit-scrollbar-thumb{background:rgba(31,78,121,.18);border-radius:8px}
-
+  .pdf-canvas{
+    background:#fff;border:1px solid var(--border);border-radius:4px;
+    box-shadow:0 4px 14px rgba(30,50,80,.10);display:none;
+  }
+  .pdf-notice{
+    max-width:560px;text-align:center;color:var(--ink-50);padding:34px 30px;
+    background:var(--surface);border:1px dashed var(--border);border-radius:var(--radius);
+  }
+  .pdf-notice .ico{width:38px;height:38px;margin:0 auto 12px;border-radius:10px;background:var(--blue-50);display:grid;place-items:center;color:var(--blue-600)}
+  .pdf-notice .ico svg{width:19px;height:19px}
+  .pdf-notice b{display:block;font-size:13px;color:var(--ink);margin-bottom:6px}
+  .pdf-notice code{
+    display:inline-block;margin-top:10px;padding:5px 9px;border-radius:6px;
+    background:#F5F7FA;border:1px solid var(--border);font-size:11px;color:var(--blue-900);
+  }
+  .pdf-notice p{margin:0 0 6px;font-size:11.5px;line-height:1.6}
+  .pdf-progress{
+    width:100%;max-width:340px;height:6px;border-radius:999px;
+    background:#E3E8EF;margin:8px 0 2px;overflow:hidden;
+  }
+  .pdf-progress-fill{
+    height:100%;width:0;border-radius:999px;background:var(--blue-600);
+    transition:width .2s ease;
+  }
 
   /* ============================ Storyboard ============================ */
   .story-intro{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:16px;flex-wrap:wrap}
@@ -403,23 +426,48 @@
                 <div>
                   <p class="card-kicker">Resource Guide</p>
                   <h2 class="card-title">PREMs Resource Guide — PDF preview</h2>
-                  <p class="card-sub">Hosted on GitHub Releases (~56 MB). Native PDF viewer — first load may take a moment.</p>
+                  <p class="card-sub">Large PDF (~56 MB). Only the visible page is rendered by PDF.js; the whole document is never pre-rendered.</p>
                 </div>
-                <span class="card-badge">Native PDF viewer</span>
+                <span class="card-badge">PDF.js · single-page render</span>
               </div>
 
               <div class="pdf-toolbar" role="toolbar" aria-label="PDF toolbar">
+                <button class="tool-btn" data-action="prev" aria-label="Previous page">
+                  <svg><use href="#i-chev-l"></use></svg> Prev
+                </button>
+                <button class="tool-btn" data-action="next" aria-label="Next page">
+                  Next <svg><use href="#i-chev-r"></use></svg>
+                </button>
+                <span class="toolbar-sep"></span>
+                <span class="pdf-page-label">Page – / –</span>
+                <span class="toolbar-sep"></span>
+                <button class="tool-btn fit" data-action="fit" aria-label="Fit to width">
+                  <svg><use href="#i-fit"></use></svg> Fit width
+                </button>
+                <button class="tool-btn" data-action="zoom-out" aria-label="Zoom out">
+                  <svg><use href="#i-minus"></use></svg>
+                </button>
+                <span class="pdf-zoom-label">—</span>
+                <button class="tool-btn" data-action="zoom-in" aria-label="Zoom in">
+                  <svg><use href="#i-plus"></use></svg>
+                </button>
+                <span class="toolbar-spacer"></span>
                 <button class="tool-btn" data-action="print" aria-label="Print PDF">
                   <svg><use href="#i-print"></use></svg> Print
                 </button>
                 <a class="tool-btn" href="https://ymataz.github.io/prems-assets/resource-guide.pdf" target="_blank" rel="noopener">Download</a>
-                <span class="toolbar-spacer"></span>
                 <span class="card-badge">resource-guide.pdf · 56 MB</span>
               </div>
 
               <div class="pdf-stage" id="pdf-guide">
-                <div class="pdf-loading">Loading PDF…<span class="pdf-loading-sub">~56 MB · first load may take a moment</span></div>
-                <iframe class="pdf-iframe" title="Resource Guide PDF"></iframe>
+                <div class="pdf-notice">
+                  <div class="ico"><svg><use href="#i-info"></use></svg></div>
+                  <b>Loading PDF.js…</b>
+                  <p>If this message persists, check the network connection to the PDF.js CDN.</p>
+                  <div class="pdf-progress"><div class="pdf-progress-fill" id="pdf-guide-progress"></div></div>
+                  <code id="pdf-guide-path">resource-guide.pdf</code>
+                </div>
+                <canvas class="pdf-canvas" aria-label="PDF page preview"></canvas>
               </div>
             </div>
           </section>
@@ -435,23 +483,48 @@
                 <div>
                   <p class="card-kicker">Checklist</p>
                   <h2 class="card-title">PREMs Checklist — PDF preview</h2>
-                  <p class="card-sub">Single-page checklist — native PDF viewer.</p>
+                  <p class="card-sub">Same single-page PDF.js viewer. Swap the placeholder path when the real file is available.</p>
                 </div>
-                <span class="card-badge">Native PDF viewer</span>
+                <span class="card-badge">PDF.js · single-page render</span>
               </div>
 
               <div class="pdf-toolbar" role="toolbar" aria-label="PDF toolbar">
+                <button class="tool-btn" data-action="prev" aria-label="Previous page">
+                  <svg><use href="#i-chev-l"></use></svg> Prev
+                </button>
+                <button class="tool-btn" data-action="next" aria-label="Next page">
+                  Next <svg><use href="#i-chev-r"></use></svg>
+                </button>
+                <span class="toolbar-sep"></span>
+                <span class="pdf-page-label">Page – / –</span>
+                <span class="toolbar-sep"></span>
+                <button class="tool-btn fit" data-action="fit" aria-label="Fit to width">
+                  <svg><use href="#i-fit"></use></svg> Fit width
+                </button>
+                <button class="tool-btn" data-action="zoom-out" aria-label="Zoom out">
+                  <svg><use href="#i-minus"></use></svg>
+                </button>
+                <span class="pdf-zoom-label">—</span>
+                <button class="tool-btn" data-action="zoom-in" aria-label="Zoom in">
+                  <svg><use href="#i-plus"></use></svg>
+                </button>
+                <span class="toolbar-spacer"></span>
                 <button class="tool-btn" data-action="print" aria-label="Print PDF">
                   <svg><use href="#i-print"></use></svg> Print
                 </button>
                 <a class="tool-btn" href="https://ymataz.github.io/prems-assets/checklist.pdf" target="_blank" rel="noopener">Download</a>
-                <span class="toolbar-spacer"></span>
                 <span class="card-badge">checklist.pdf</span>
               </div>
 
               <div class="pdf-stage" id="pdf-checklist">
-                <div class="pdf-loading">Loading PDF…<span class="pdf-loading-sub">Single-page checklist</span></div>
-                <iframe class="pdf-iframe" title="Checklist PDF"></iframe>
+                <div class="pdf-notice">
+                  <div class="ico"><svg><use href="#i-info"></use></svg></div>
+                  <b>Loading PDF.js…</b>
+                  <p>If this message persists, check the network connection to the PDF.js CDN.</p>
+                  <div class="pdf-progress"><div class="pdf-progress-fill" id="pdf-checklist-progress"></div></div>
+                  <code id="pdf-checklist-path">checklist.pdf</code>
+                </div>
+                <canvas class="pdf-canvas" aria-label="PDF page preview"></canvas>
               </div>
             </div>
           </section>
@@ -542,24 +615,14 @@
   /* ------------------------------------------------------------
      【嵌入点：Resource Guide PDF 路径】
      把 "resource-guide.pdf" 替换为真实文件的相对路径或完整 URL。
-     大文件托管在 GitHub Releases（下载直连，站点部署保持轻量）。
+     提示：约 56MB 的大文件请部署到支持 HTTP Range 的服务器
+     （IIS / nginx / S3 等），PDF.js 才会按页做 range 请求；
+     用 file:// 直接打开时浏览器仍可能一次读取整个文件。
   ------------------------------------------------------------ */
   var PDF_SOURCES = {
-    guide: "https://ymataz.github.io/prems-assets/resource-guide.pdf",   // ← Release 资产（仓库外，部署快）
-    checklist: "https://ymataz.github.io/prems-assets/checklist.pdf"   // ← Release 资产
+    guide: "https://ymataz.github.io/prems-assets/resource-guide.pdf",   // ← 同域 assets（PDF.js 可加载）
+    checklist: "https://ymataz.github.io/prems-assets/checklist.pdf"     // ← 同域 assets
   };
-
-  /* iframe 版 PDF 预览：懒加载 + 加载提示（iframe 无进度事件，用 onload 隐藏提示） */
-  function setupPdfFrame(id, src){
-    var stage = document.getElementById(id);
-    if(!stage) return;
-    var frame = stage.querySelector(".pdf-iframe");
-    var hint = stage.querySelector(".pdf-loading");
-    if(!frame || frame.getAttribute("data-loaded")) return;
-    frame.setAttribute("data-loaded", "1");
-    frame.onload = function(){ if(hint) hint.style.display = "none"; };
-    frame.src = src;
-  }
 
   /* ------------------------------------------------------------
      【嵌入点：Storyboard 图片路径】
@@ -577,6 +640,9 @@
     { src: "storyboard/7.png", title: "7 · ACT TOGETHER",            note: "Agree. Assign. Re-check." }
   ];
 
+  /* PDF.js 本地自托管（lib/ 目录），GitHub Pages 无需外部 CDN */
+  var PDFJS_LIB = "lib/pdf.min.js";
+  var PDFJS_WORKER = "lib/pdf.worker.min.js";
 
   /* ============================================================
      1. Utilities
@@ -632,9 +698,9 @@
       next.classList.add("active");
       mainScroll.scrollTop = 0;
 
-      /* 首次进入 PDF 视图时才触发加载（iframe 懒加载） */
-      if(id === "resource-guide") setupPdfFrame("pdf-guide", PDF_SOURCES.guide);
-      if(id === "checklist")      setupPdfFrame("pdf-checklist", PDF_SOURCES.checklist);
+      /* 首次进入 PDF 视图时才触发加载（只渲染当前页） */
+      if(id === "resource-guide") activatePdf("pdf-guide");
+      if(id === "checklist")      activatePdf("pdf-checklist");
     }, reducedMotion ? 0 : 180);
   }
 
@@ -734,18 +800,227 @@
     renderStory(0);
   }
 
-  /* PDF 打印：新窗口打开整份 PDF */
+  /* ============================================================
+     4. PDF.js — 按需加载，每次只渲染当前页
+  ============================================================ */
+  var pdfStates = {
+    "pdf-guide":     { page: 1, scale: 1, fit: true, doc: null, task: null, loading: false, loaded: false },
+    "pdf-checklist": { page: 1, scale: 1, fit: true, doc: null, task: null, loading: false, loaded: false }
+  };
+
+  var pdfLibLoading = false;
+  var pdfLibCallbacks = [];
+  function ensurePdfLib(cb){
+    if(window.pdfjsLib){ cb(); return; }
+    /* library 还在加载中时也把回调排队，避免快速切换视图丢回调 */
+    pdfLibCallbacks.push(cb);
+    if(pdfLibLoading) return;
+    pdfLibLoading = true;
+
+    var script = document.createElement("script");
+    script.src = PDFJS_LIB;
+    script.onload = function(){
+      try{
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER;
+        var queue = pdfLibCallbacks.splice(0);
+        queue.forEach(function(fn){ fn(); });
+      }catch(err){
+        pdfFailAll("PDF.js initialisation failed.");
+      }
+    };
+    script.onerror = function(){
+      pdfLibLoading = false;
+      pdfLibCallbacks = [];
+      pdfFailAll("PDF.js CDN could not be loaded — network access is required.");
+    };
+    document.head.appendChild(script);
+  }
+
+  function pdfFailAll(msg){
+    Object.keys(pdfStates).forEach(function(id){
+      pdfStates[id].loading = false; /* 允许用户重新进入视图时重试 */
+      showNotice(id, "PDF.js unavailable", msg, "");
+    });
+  }
+
+  function viewerIdFor(viewName){
+    return viewName === "resource-guide" ? "pdf-guide" : "pdf-checklist";
+  }
+
+  /* 进入视图时调用：只初始化一次，之后切换回来不再重新加载 */
+  function activatePdf(viewName){
+    var id = viewerIdFor(viewName);
+    var st = pdfStates[id];
+    if(st.loaded || st.loading) return;
+    st.loading = true;
+
+    ensurePdfLib(function(){
+      var src = viewName === "resource-guide" ? PDF_SOURCES.guide : PDF_SOURCES.checklist;
+      showNotice(id, "Opening PDF…", src, src);
+
+      window.pdfjsLib.getDocument({
+        url: src,
+        /* 大文件：只按需拉取当前页所需 range，不做整本预渲染。 */
+        disableAutoFetch: false,
+        rangeChunkSize: 262144,
+        onProgress: function(ev){
+          if(ev && ev.total && !st.loaded){
+            var pct = Math.min(100, Math.round(ev.loaded / ev.total * 100));
+            var stEl = document.getElementById(id);
+            var b = stEl ? stEl.querySelector(".pdf-notice b") : null;
+            if(b){ b.textContent = "Loading PDF… " + pct + "%"; }
+            var fill = document.getElementById(id + "-progress");
+            if(fill){ fill.style.width = pct + "%"; }
+          }
+        }
+      }).promise.then(function(doc){
+        st.doc = doc;
+        st.loaded = true;
+        st.loading = false;
+        updatePdfChrome(id);
+        renderPdfPage(id);
+      }).catch(function(err){
+        st.loading = false;
+        showNotice(
+          id,
+          "PDF not found at placeholder path",
+          "Replace the placeholder path in PDF_SOURCES with the real file, then reload. (" + (err && err.message ? err.message : "load error") + ")",
+          src
+        );
+      });
+    });
+  }
+
+  /* 初始默认视图是 Resource Guide */
+  activatePdf("resource-guide");
+
+  function showNotice(id, title, text, path){
+    var stage = $("#" + id);
+    if(!stage) return;
+    var canvas = $(".pdf-canvas", stage);
+    var notice = $(".pdf-notice", stage);
+    canvas.style.display = "none";
+    if(notice){
+      $("b", notice).textContent = title;
+      $("p", notice).textContent = text;
+      var code = $("code", notice);
+      if(code && path !== null && path !== undefined){ code.textContent = path; }
+    } else {
+      var el = document.createElement("div");
+      el.className = "pdf-notice";
+      el.innerHTML = "<div class=\"ico\"><svg><use href=\"#i-info\"></use></svg></div><b></b><p></p><code></code>";
+      $("b", el).textContent = title;
+      $("p", el).textContent = text;
+      $("code", el).textContent = path || "";
+      stage.appendChild(el);
+    }
+    /* chrome: reset controls while loading/error */
+    $$(".tool-btn", stage.parentElement).forEach(function(b){ b.disabled = true; });
+    $(".pdf-page-label", stage.parentElement).textContent = "Page – / –";
+    $(".pdf-zoom-label", stage.parentElement).textContent = "—";
+  }
+
+  function updatePdfChrome(id){
+    var st = pdfStates[id];
+    var root = $("#" + id).closest(".pdf-card");
+    $(".pdf-page-label", root).textContent = "Page " + st.page + " / " + st.doc.numPages;
+    $(".pdf-zoom-label", root).textContent = Math.round(st.scale * 100) + "%";
+    $$(".tool-btn", root).forEach(function(b){
+      b.disabled = false;
+    });
+    $('[data-action="prev"]', root).disabled = (st.page <= 1);
+    $('[data-action="next"]', root).disabled = (st.page >= st.doc.numPages);
+  }
+
+  /* 核心：只获取 + 渲染当前页。页码变化时取消上一次未完成的 render task。 */
+  function renderPdfPage(id){
+    var st = pdfStates[id];
+    if(!st.doc) return;
+    if(st.task){ try{ st.task.cancel(); }catch(e){} st.task = null; }
+
+    var stage = $("#" + id);
+    var canvas = $(".pdf-canvas", stage);
+    var notice = $(".pdf-notice", stage);
+
+    st.doc.getPage(st.page).then(function(page){
+      var base = page.getViewport({ scale: 1 });
+
+      /* fit width：按 stage 可用宽度计算 scale（保留 3 位小数，避免取整导致的模糊） */
+      if(st.fit){
+        st.scale = Math.min(4, Math.max(0.35, (stage.clientWidth - 44) / base.width));
+        st.scale = Math.round(st.scale * 1000) / 1000;
+      }
+
+      /* devicePixelRatio 提升清晰度，但限制在 2 防止 56MB 大页爆内存 */
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      var viewport = page.getViewport({ scale: st.scale * dpr });
+
+      canvas.width = Math.floor(viewport.width);
+      canvas.height = Math.floor(viewport.height);
+      canvas.style.width = Math.floor(viewport.width / dpr) + "px";
+      canvas.style.height = Math.floor(viewport.height / dpr) + "px";
+      canvas.style.display = "block";
+      if(notice) notice.style.display = "none";
+
+      var ctx = canvas.getContext("2d", { alpha: false });
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      st.task = page.render({ canvasContext: ctx, viewport: viewport });
+      st.task.promise.then(function(){
+        st.task = null;
+        updatePdfChrome(id);
+      }).catch(function(){ /* render cancelled — expected on rapid page flip */ });
+    }).catch(function(err){
+      showNotice(id, "Could not render this page", (err && err.message ? err.message : ""), PDF_SOURCES[viewNameFromId(id)]);
+    });
+  }
+
+  function viewNameFromId(id){ return id === "pdf-guide" ? "guide" : "checklist"; }
+
+  /* Toolbar actions（事件委托，两个 PDF viewer 共用） */
   document.addEventListener("click", function(e){
     var btn = e.target.closest(".tool-btn");
-    if(!btn) return;
+    if(!btn || btn.disabled) return;
+    var card = btn.closest(".pdf-card");
+    var stage = $(".pdf-stage", card);
+    var id = stage.id;
+    var st = pdfStates[id];
     var action = btn.getAttribute("data-action");
+
+    /* 打印：新窗口打开整份 PDF，用浏览器原生查看器打印 */
     if(action === "print"){
-      var card = btn.closest(".pdf-card");
-      var stageEl = card ? card.querySelector(".pdf-stage") : null;
-      var id = stageEl ? stageEl.id : "";
       var src = id === "pdf-guide" ? PDF_SOURCES.guide : PDF_SOURCES.checklist;
       window.open(src, "_blank");
+      return;
     }
+
+    if(!st || !st.doc) return;
+
+    if(action === "prev" && st.page > 1){
+      st.page -= 1; renderPdfPage(id);
+    } else if(action === "next" && st.page < st.doc.numPages){
+      st.page += 1; renderPdfPage(id);
+    } else if(action === "zoom-in"){
+      st.fit = false; st.scale = Math.min(4, Math.round((st.scale + 0.15) * 100) / 100); renderPdfPage(id);
+    } else if(action === "zoom-out"){
+      st.fit = false; st.scale = Math.max(0.35, Math.round((st.scale - 0.15) * 100) / 100); renderPdfPage(id);
+    } else if(action === "fit"){
+      st.fit = true; renderPdfPage(id);
+    }
+    updatePdfChrome(id);
+  });
+
+  /* 窗口尺寸变化：fit 模式下重新适配 */
+  var resizeTimer = null;
+  window.addEventListener("resize", function(){
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function(){
+      Object.keys(pdfStates).forEach(function(id){
+        var st = pdfStates[id];
+        if(st.doc && st.fit){ renderPdfPage(id); }
+      });
+    }, 180);
   });
 
   /* ============================================================
