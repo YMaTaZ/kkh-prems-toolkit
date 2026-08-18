@@ -191,9 +191,19 @@
   .toolbar-spacer{flex:1}
 
   .pdf-stage{
-    min-height:560px;max-height:calc(100vh - 280px);overflow:auto;
-    background:#F5F7FA;padding:26px 22px;display:flex;justify-content:center;align-items:flex-start;
+    position:relative;
+    background:#F5F7FA;overflow:hidden;
   }
+  .pdf-iframe{
+    display:block;width:100%;height:calc(100vh - 320px);min-height:560px;
+    border:0;background:#fff;
+  }
+  .pdf-loading{
+    position:absolute;inset:0;z-index:2;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+    background:#F5F7FA;color:var(--ink-70);font-size:13.5px;font-weight:600;
+  }
+  .pdf-loading-sub{font-size:11px;color:var(--ink-50);font-weight:400}
   .pdf-stage::-webkit-scrollbar{width:9px;height:9px}
   .pdf-stage::-webkit-scrollbar-thumb{background:rgba(31,78,121,.18);border-radius:8px}
   .pdf-canvas{
@@ -426,47 +436,23 @@
                 <div>
                   <p class="card-kicker">Resource Guide</p>
                   <h2 class="card-title">PREMs Resource Guide — PDF preview</h2>
-                  <p class="card-sub">Large PDF (~56 MB). Only the visible page is rendered by PDF.js; the whole document is never pre-rendered.</p>
+                  <p class="card-sub">Hosted on GitHub Releases (~56 MB). Native PDF viewer — first load may take a moment.</p>
                 </div>
                 <span class="card-badge">PDF.js · single-page render</span>
               </div>
 
               <div class="pdf-toolbar" role="toolbar" aria-label="PDF toolbar">
-                <button class="tool-btn" data-action="prev" aria-label="Previous page">
-                  <svg><use href="#i-chev-l"></use></svg> Prev
-                </button>
-                <button class="tool-btn" data-action="next" aria-label="Next page">
-                  Next <svg><use href="#i-chev-r"></use></svg>
-                </button>
-                <span class="toolbar-sep"></span>
-                <span class="pdf-page-label">Page – / –</span>
-                <span class="toolbar-sep"></span>
-                <button class="tool-btn fit" data-action="fit" aria-label="Fit to width">
-                  <svg><use href="#i-fit"></use></svg> Fit width
-                </button>
-                <button class="tool-btn" data-action="zoom-out" aria-label="Zoom out">
-                  <svg><use href="#i-minus"></use></svg>
-                </button>
-                <span class="pdf-zoom-label">—</span>
-                <button class="tool-btn" data-action="zoom-in" aria-label="Zoom in">
-                  <svg><use href="#i-plus"></use></svg>
-                </button>
-                <span class="toolbar-spacer"></span>
                 <button class="tool-btn" data-action="print" aria-label="Print PDF">
                   <svg><use href="#i-print"></use></svg> Print
                 </button>
-                <span class="card-badge">resource-guide.pdf</span>
+                <a class="tool-btn" href="https://github.com/YMaTaZ/kkh-prems-toolkit/releases/download/v1.0-resource-guide/resource-guide.pdf" target="_blank" rel="noopener">Download</a>
+                <span class="toolbar-spacer"></span>
+                <span class="card-badge">resource-guide.pdf · 56 MB</span>
               </div>
 
               <div class="pdf-stage" id="pdf-guide">
-                <div class="pdf-notice">
-                  <div class="ico"><svg><use href="#i-info"></use></svg></div>
-                  <b>Loading PDF.js…</b>
-                  <p>If this message persists, check the network connection to the PDF.js CDN.</p>
-                  <div class="pdf-progress"><div class="pdf-progress-fill" id="pdf-guide-progress"></div></div>
-                  <code id="pdf-guide-path">resource-guide.pdf</code>
-                </div>
-                <canvas class="pdf-canvas" aria-label="PDF page preview"></canvas>
+                <div class="pdf-loading">Loading PDF…<span class="pdf-loading-sub">~56 MB · first load may take a moment</span></div>
+                <iframe class="pdf-iframe" title="Resource Guide PDF"></iframe>
               </div>
             </div>
           </section>
@@ -482,47 +468,23 @@
                 <div>
                   <p class="card-kicker">Checklist</p>
                   <h2 class="card-title">PREMs Checklist — PDF preview</h2>
-                  <p class="card-sub">Same single-page PDF.js viewer. Swap the placeholder path when the real file is available.</p>
+                  <p class="card-sub">Single-page checklist — native PDF viewer.</p>
                 </div>
                 <span class="card-badge">PDF.js · single-page render</span>
               </div>
 
               <div class="pdf-toolbar" role="toolbar" aria-label="PDF toolbar">
-                <button class="tool-btn" data-action="prev" aria-label="Previous page">
-                  <svg><use href="#i-chev-l"></use></svg> Prev
-                </button>
-                <button class="tool-btn" data-action="next" aria-label="Next page">
-                  Next <svg><use href="#i-chev-r"></use></svg>
-                </button>
-                <span class="toolbar-sep"></span>
-                <span class="pdf-page-label">Page – / –</span>
-                <span class="toolbar-sep"></span>
-                <button class="tool-btn fit" data-action="fit" aria-label="Fit to width">
-                  <svg><use href="#i-fit"></use></svg> Fit width
-                </button>
-                <button class="tool-btn" data-action="zoom-out" aria-label="Zoom out">
-                  <svg><use href="#i-minus"></use></svg>
-                </button>
-                <span class="pdf-zoom-label">—</span>
-                <button class="tool-btn" data-action="zoom-in" aria-label="Zoom in">
-                  <svg><use href="#i-plus"></use></svg>
-                </button>
-                <span class="toolbar-spacer"></span>
                 <button class="tool-btn" data-action="print" aria-label="Print PDF">
                   <svg><use href="#i-print"></use></svg> Print
                 </button>
+                <a class="tool-btn" href="checklist.pdf" target="_blank" rel="noopener">Download</a>
+                <span class="toolbar-spacer"></span>
                 <span class="card-badge">checklist.pdf</span>
               </div>
 
               <div class="pdf-stage" id="pdf-checklist">
-                <div class="pdf-notice">
-                  <div class="ico"><svg><use href="#i-info"></use></svg></div>
-                  <b>Loading PDF.js…</b>
-                  <p>If this message persists, check the network connection to the PDF.js CDN.</p>
-                  <div class="pdf-progress"><div class="pdf-progress-fill" id="pdf-checklist-progress"></div></div>
-                  <code id="pdf-checklist-path">checklist.pdf</code>
-                </div>
-                <canvas class="pdf-canvas" aria-label="PDF page preview"></canvas>
+                <div class="pdf-loading">Loading PDF…<span class="pdf-loading-sub">Single-page checklist</span></div>
+                <iframe class="pdf-iframe" title="Checklist PDF"></iframe>
               </div>
             </div>
           </section>
@@ -618,9 +580,21 @@
      用 file:// 直接打开时浏览器仍可能一次读取整个文件。
   ------------------------------------------------------------ */
   var PDF_SOURCES = {
-    guide: "resource-guide.pdf",   // ← Resource Guide PDF
-    checklist: "checklist.pdf"     // ← Checklist PDF
+    guide: "https://github.com/YMaTaZ/kkh-prems-toolkit/releases/download/v1.0-resource-guide/resource-guide.pdf",   // ← Release 资产（仓库外，部署快）
+    checklist: "checklist.pdf"     // ← 同源小文件，留在仓库
   };
+
+  /* iframe 版 PDF 预览：懒加载 + 加载提示（iframe 无进度事件，用 onload 隐藏提示） */
+  function setupPdfFrame(id, src){
+    var stage = document.getElementById(id);
+    if(!stage) return;
+    var frame = stage.querySelector(".pdf-iframe");
+    var hint = stage.querySelector(".pdf-loading");
+    if(!frame || frame.getAttribute("data-loaded")) return;
+    frame.setAttribute("data-loaded", "1");
+    frame.onload = function(){ if(hint) hint.style.display = "none"; };
+    frame.src = src;
+  }
 
   /* ------------------------------------------------------------
      【嵌入点：Storyboard 图片路径】
@@ -696,9 +670,9 @@
       next.classList.add("active");
       mainScroll.scrollTop = 0;
 
-      /* 首次进入 PDF 视图时才触发加载（只渲染当前页） */
-      if(id === "resource-guide") activatePdf("pdf-guide");
-      if(id === "checklist")      activatePdf("pdf-checklist");
+      /* 首次进入 PDF 视图时才触发加载（iframe 懒加载） */
+      if(id === "resource-guide") setupPdfFrame("pdf-guide", PDF_SOURCES.guide);
+      if(id === "checklist")      setupPdfFrame("pdf-checklist", PDF_SOURCES.checklist);
     }, reducedMotion ? 0 : 180);
   }
 
@@ -890,7 +864,7 @@
   }
 
   /* 初始默认视图是 Resource Guide */
-  activatePdf("resource-guide");
+  setupPdfFrame("pdf-guide", PDF_SOURCES.guide);
 
   function showNotice(id, title, text, path){
     var stage = $("#" + id);
