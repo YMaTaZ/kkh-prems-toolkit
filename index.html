@@ -302,6 +302,18 @@
     }
     .anim{opacity:1 !important}
   }
+
+  /* ============================ Print ============================ */
+  @media print{
+    body *{visibility:hidden}
+    #view-storyboard .story-frame,
+    #view-storyboard .story-frame *{visibility:visible}
+    #view-storyboard .story-frame{
+      position:fixed;left:6mm;top:6mm;width:calc(100% - 12mm);
+      border:none;box-shadow:none;border-radius:0;
+    }
+    #view-storyboard .story-thumb img{object-fit:contain}
+  }
 </style>
 </head>
 <body>
@@ -326,6 +338,7 @@
       <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5.5 12h13" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></symbol>
       <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5.5v13M5.5 12h13" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></symbol>
       <symbol id="i-fit" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8V4h10v4M7 16H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2M7 13h10v7H7z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
       <symbol id="i-shield" viewBox="0 0 24 24">
         <path d="M12 2.8 4.5 5.6v6c0 4.6 3 7.7 7.5 9.6 4.5-1.9 7.5-5 7.5-9.6v-6L12 2.8Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
         <path d="m8.8 12 2.2 2.2 4.4-4.6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
@@ -427,6 +440,9 @@
                   <svg><use href="#i-plus"></use></svg>
                 </button>
                 <span class="toolbar-spacer"></span>
+                <button class="tool-btn" data-action="print" aria-label="Print PDF">
+                  <svg><use href="#i-print"></use></svg> Print
+                </button>
                 <span class="card-badge">resource-guide.pdf</span>
               </div>
 
@@ -479,6 +495,9 @@
                   <svg><use href="#i-plus"></use></svg>
                 </button>
                 <span class="toolbar-spacer"></span>
+                <button class="tool-btn" data-action="print" aria-label="Print PDF">
+                  <svg><use href="#i-print"></use></svg> Print
+                </button>
                 <span class="card-badge">checklist.pdf</span>
               </div>
 
@@ -506,7 +525,12 @@
                 <h2>Storyboard — 7 frames</h2>
                 <p>Click the image (or use the arrows) to move to the next frame. Real PNGs will replace the placeholders automatically.</p>
               </div>
-              <span class="story-hint">Click image for <b>next</b> →</span>
+              <div style="display:flex;align-items:center;gap:14px;">
+                <span class="story-hint">Click image for <b>next</b> →</span>
+                <button class="tool-btn" id="storyPrint" aria-label="Print storyboard">
+                  <svg><use href="#i-print"></use></svg> Print
+                </button>
+              </div>
             </div>
 
             <!-- 单帧切换：JS 根据 STORYBOARD_IMAGES 更新当前帧内容 -->
@@ -818,9 +842,17 @@
 
       window.pdfjsLib.getDocument({
         url: src,
-        /* 大文件：只按需拉取当前页所需 range，不做整本预渲染。
-           如需更强控制可加 rangeChunkSize（单位 bytes），例如 131072。 */
-        disableAutoFetch: false
+        /* 大文件：只按需拉取当前页所需 range，不做整本预渲染。 */
+        disableAutoFetch: false,
+        rangeChunkSize: 262144,
+        onProgress: function(ev){
+          if(ev && ev.total && !st.loaded){
+            var pct = Math.min(100, Math.round(ev.loaded / ev.total * 100));
+            var stEl = document.getElementById(id);
+            var b = stEl ? stEl.querySelector(".pdf-notice b") : null;
+            if(b){ b.textContent = "Loading PDF… " + pct + "%"; }
+          }
+        }
       }).promise.then(function(doc){
         st.doc = doc;
         st.loaded = true;
@@ -893,10 +925,10 @@
     st.doc.getPage(st.page).then(function(page){
       var base = page.getViewport({ scale: 1 });
 
-      /* fit width：按 stage 可用宽度计算 scale */
+      /* fit width：按 stage 可用宽度计算 scale（保留 3 位小数，避免取整导致的模糊） */
       if(st.fit){
         st.scale = Math.min(4, Math.max(0.35, (stage.clientWidth - 44) / base.width));
-        st.scale = Math.round(st.scale * 100) / 100;
+        st.scale = Math.round(st.scale * 1000) / 1000;
       }
 
       /* devicePixelRatio 提升清晰度，但限制在 2 防止 56MB 大页爆内存 */
@@ -934,8 +966,24 @@
     var stage = $(".pdf-stage", card);
     var id = stage.id;
     var st = pdfStates[id];
-    if(!st || !st.doc) return;
     var action = btn.getAttribute("data-action");
+
+    /* 打印：走隐藏 iframe 原生 PDF 查看器，不依赖 pdf.js 加载完成 */
+    if(action === "print"){
+      var src = id === "pdf-guide" ? PDF_SOURCES.guide : PDF_SOURCES.checklist;
+      var f = document.getElementById("printFrame");
+      if(!f) return;
+      f.onload = function(){
+        setTimeout(function(){
+          try{ f.contentWindow.print(); }
+          catch(err){ try{ f.contentDocument.execCommand("print", false, null); }catch(e2){} }
+        }, 400);
+      };
+      f.src = src;
+      return;
+    }
+
+    if(!st || !st.doc) return;
 
     if(action === "prev" && st.page > 1){
       st.page -= 1; renderPdfPage(id);
@@ -967,6 +1015,11 @@
      5. Init
   ============================================================ */
   initStoryboard();
+  /* 故事板打印：打印当前帧（print CSS 只显示当前帧） */
+  var storyPrintBtn = document.getElementById("storyPrint");
+  if(storyPrintBtn){
+    storyPrintBtn.addEventListener("click", function(){ window.print(); });
+  }
   stagger($(".view.active"));
 
   /* deep link 支持：index.html#storyboard */
@@ -982,5 +1035,6 @@
   }
 })();
 </script>
+  <iframe id="printFrame" style="display:none;width:0;height:0;border:0" aria-hidden="true" title="Print helper"></iframe>
 </body>
 </html>
