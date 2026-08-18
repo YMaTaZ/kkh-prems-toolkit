@@ -187,6 +187,13 @@
     min-width:46px;text-align:center;font-size:11.5px;font-weight:600;color:var(--ink-70);
     font-variant-numeric:tabular-nums;
   }
+  .page-jump,.story-jump{
+    width:64px;height:30px;border:1px solid var(--border);border-radius:6px;
+    padding:0 8px;font-size:12px;color:var(--ink);background:var(--surface);
+    transition:border-color .15s ease;
+  }
+  .page-jump:focus,.story-jump:focus{outline:none;border-color:var(--blue-600)}
+  .story-jump{width:54px;text-align:center}
   .toolbar-sep{width:1px;height:20px;background:var(--border)}
   .toolbar-spacer{flex:1}
 
@@ -440,6 +447,7 @@
                 </button>
                 <span class="toolbar-sep"></span>
                 <span class="pdf-page-label">Page – / –</span>
+                <input class="page-jump" type="number" min="1" placeholder="Jump" aria-label="Jump to page" title="Jump to page">
                 <span class="toolbar-sep"></span>
                 <button class="tool-btn fit" data-action="fit" aria-label="Fit to width">
                   <svg><use href="#i-fit"></use></svg> Fit width
@@ -497,6 +505,7 @@
                 </button>
                 <span class="toolbar-sep"></span>
                 <span class="pdf-page-label">Page – / –</span>
+                <input class="page-jump" type="number" min="1" placeholder="Jump" aria-label="Jump to page" title="Jump to page">
                 <span class="toolbar-sep"></span>
                 <button class="tool-btn fit" data-action="fit" aria-label="Fit to width">
                   <svg><use href="#i-fit"></use></svg> Fit width
@@ -571,6 +580,7 @@
                   <svg><use href="#i-chev-l"></use></svg>
                 </button>
                 <span class="story-counter" id="storyCounter">1 / 7</span>
+                <input class="story-jump" type="number" min="1" max="7" placeholder="1-7" aria-label="Jump to frame" title="Jump to frame">
                 <button class="story-arrow" id="storyNext" aria-label="Next image">
                   <svg><use href="#i-chev-r"></use></svg>
                 </button>
@@ -787,6 +797,25 @@
     $("#storyNext").addEventListener("click", function(){ storyGo(1); });
     $("#storyPrev").addEventListener("click", function(){ storyGo(-1); });
 
+    /* 帧号跳转输入框（Enter 跳转到指定帧） */
+    var jumpEl = $(".story-jump");
+    if(jumpEl){
+      jumpEl.addEventListener("keydown", function(e){
+        if(e.key !== "Enter") return;
+        var v = parseInt(jumpEl.value, 10);
+        jumpEl.value = "";
+        if(isNaN(v)) return;
+        if(v >= 1 && v <= STORYBOARD_IMAGES.length && v - 1 !== storyIndex){
+          storyIndex = v - 1;
+          frame.classList.remove("entering");
+          renderStory(storyIndex);
+          void frame.offsetWidth;
+          frame.classList.add("entering");
+          setTimeout(function(){ frame.classList.remove("entering"); }, 240);
+        }
+      });
+    }
+
     /* 键盘左右方向键（仅故事板视图激活时） */
     document.addEventListener("keydown", function(e){
       var active = $("#view-storyboard").classList.contains("active");
@@ -933,6 +962,17 @@
   }
 
   /* 核心：只获取 + 渲染当前页。页码变化时取消上一次未完成的 render task。 */
+  /* ---- 页缓存：fit 模式翻页秒开 + 相邻页预渲染 ---- */
+  var pageCache = {};
+  var CACHE_LIMIT = 5;
+  function cacheGet(id, p){ return pageCache[id] ? pageCache[id][p] : null; }
+  function cacheSet(id, p, url){
+    pageCache[id] = pageCache[id] || {};
+    pageCache[id][p] = url;
+    if(Object.keys(pageCache[id]).length > CACHE_LIMIT){ pageCache[id] = {}; }
+  }
+  function cacheClear(id){ if(pageCache[id]) pageCache[id] = {}; }
+
   function renderPdfPage(id){
     var st = pdfStates[id];
     if(!st.doc) return;
@@ -941,6 +981,31 @@
     var stage = $("#" + id);
     var canvas = $(".pdf-canvas", stage);
     var notice = $(".pdf-notice", stage);
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    /* 缓存命中（fit 模式）：直接显示缓存页图，秒开 */
+    if(st.fit){
+      var cached = cacheGet(id, st.page);
+      if(cached){
+        var img = new Image();
+        img.onload = function(){
+          canvas.width = img.width;
+          canvas.height = img.height;
+          canvas.style.width = (img.width / dpr) + "px";
+          canvas.style.height = (img.height / dpr) + "px";
+          canvas.style.display = "block";
+          if(notice) notice.style.display = "none";
+          var ctx = canvas.getContext("2d", { alpha: false });
+          ctx.fillStyle = "#FFFFFF";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0);
+          updatePdfChrome(id);
+        };
+        img.src = cached;
+        warmNext(id);
+        return;
+      }
+    }
 
     st.doc.getPage(st.page).then(function(page){
       var base = page.getViewport({ scale: 1 });
@@ -951,10 +1016,7 @@
         st.scale = Math.round(st.scale * 1000) / 1000;
       }
 
-      /* devicePixelRatio 提升清晰度，但限制在 2 防止 56MB 大页爆内存 */
-      var dpr = Math.min(window.devicePixelRatio || 1, 2);
       var viewport = page.getViewport({ scale: st.scale * dpr });
-
       canvas.width = Math.floor(viewport.width);
       canvas.height = Math.floor(viewport.height);
       canvas.style.width = Math.floor(viewport.width / dpr) + "px";
@@ -969,10 +1031,41 @@
       st.task = page.render({ canvasContext: ctx, viewport: viewport });
       st.task.promise.then(function(){
         st.task = null;
+        if(st.fit){ cacheSet(id, st.page, canvas.toDataURL("image/jpeg", 0.72)); }
         updatePdfChrome(id);
+        warmNext(id);
       }).catch(function(){ /* render cancelled — expected on rapid page flip */ });
     }).catch(function(err){
       showNotice(id, "Could not render this page", (err && err.message ? err.message : ""), PDF_SOURCES[viewNameFromId(id)]);
+    });
+  }
+
+  /* 后台预渲染相邻页（写缓存，不切换显示） */
+  function warmNext(id){
+    var st = pdfStates[id];
+    if(!st.doc || !st.fit) return;
+    var stage = $("#" + id);
+    st.warm = st.warm || {};
+    [st.page + 1, st.page - 1].forEach(function(p){
+      if(p < 1 || p > st.doc.numPages) return;
+      if(cacheGet(id, p) || st.warm[p]) return;
+      st.warm[p] = true;
+      st.doc.getPage(p).then(function(page){
+        var base = page.getViewport({ scale: 1 });
+        var scale = Math.min(4, Math.max(0.35, (stage.clientWidth - 44) / base.width));
+        var dpr = Math.min(window.devicePixelRatio || 1, 2);
+        var vp = page.getViewport({ scale: scale * dpr });
+        var off = document.createElement("canvas");
+        off.width = Math.floor(vp.width);
+        off.height = Math.floor(vp.height);
+        var ctx = off.getContext("2d", { alpha: false });
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillRect(0, 0, off.width, off.height);
+        return page.render({ canvasContext: ctx, viewport: vp }).promise.then(function(){
+          cacheSet(id, p, off.toDataURL("image/jpeg", 0.72));
+          st.warm[p] = false;
+        });
+      }).catch(function(){ if(st.warm) st.warm[p] = false; });
     });
   }
 
@@ -1002,13 +1095,31 @@
     } else if(action === "next" && st.page < st.doc.numPages){
       st.page += 1; renderPdfPage(id);
     } else if(action === "zoom-in"){
-      st.fit = false; st.scale = Math.min(4, Math.round((st.scale + 0.15) * 100) / 100); renderPdfPage(id);
+      st.fit = false; cacheClear(id); st.scale = Math.min(4, Math.round((st.scale + 0.15) * 100) / 100); renderPdfPage(id);
     } else if(action === "zoom-out"){
-      st.fit = false; st.scale = Math.max(0.35, Math.round((st.scale - 0.15) * 100) / 100); renderPdfPage(id);
+      st.fit = false; cacheClear(id); st.scale = Math.max(0.35, Math.round((st.scale - 0.15) * 100) / 100); renderPdfPage(id);
     } else if(action === "fit"){
-      st.fit = true; renderPdfPage(id);
+      st.fit = true; cacheClear(id); renderPdfPage(id);
     }
     updatePdfChrome(id);
+  });
+
+  /* 页码跳转输入框（两个 PDF viewer 共用，Enter 跳转） */
+  document.addEventListener("keydown", function(e){
+    if(e.key !== "Enter") return;
+    var inp = e.target;
+    if(!inp || !inp.classList || !inp.classList.contains("page-jump")) return;
+    var card = inp.closest(".pdf-card");
+    var stageEl = card ? card.querySelector(".pdf-stage") : null;
+    var id = stageEl ? stageEl.id : "";
+    var st = pdfStates[id];
+    var v = parseInt(inp.value, 10);
+    inp.value = "";
+    if(!st || !st.doc || isNaN(v)) return;
+    if(v >= 1 && v <= st.doc.numPages){
+      st.page = v;
+      renderPdfPage(id);
+    }
   });
 
   /* 窗口尺寸变化：fit 模式下重新适配 */
