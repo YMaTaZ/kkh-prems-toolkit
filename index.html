@@ -157,6 +157,20 @@
   .card-kicker{font-size:9.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--blue-600);margin:0 0 4px}
   .card-title{margin:0;font-size:14.5px;font-weight:700;color:var(--ink)}
   .card-sub{margin:4px 0 0;font-size:11.5px;line-height:1.55;color:var(--ink-50)}
+  /* 封面独立栏 */
+  .cover-card{ margin-bottom:20px; }
+  .cover-frame{
+    padding:26px 28px 30px; background:#FFFFFF;
+    display:flex; justify-content:center;
+  }
+  .cover-img{
+    max-width:100%; height:auto; display:block;
+    border:1px solid var(--border); border-radius:10px;
+    box-shadow:0 6px 22px rgba(15,40,70,.08);
+  }
+  @media (max-width:600px){
+    .cover-frame{ padding:14px 14px 18px; }
+  }
   .card-badge{
     flex:0 0 auto;font-size:10px;font-weight:700;color:var(--blue-600);
     background:var(--blue-50);border:1px solid var(--blue-100);
@@ -545,6 +559,21 @@
                对应 JS 配置：PDF_SOURCES.guide（当前占位 "resource-guide.pdf"）
           ============================================================ -->
           <section class="view active" id="view-resource-guide">
+            <!-- 封面独立一栏（从 PDF 预览中拆出，单独展示） -->
+            <div class="card cover-card anim">
+              <div class="card-head">
+                <div>
+                  <p class="card-kicker">Guide Cover</p>
+                  <h2 class="card-title">KKH Dashboard Guide</h2>
+                  <p class="card-sub">Read → Understand → Act for Better Patient Experience. The cover is presented separately; the full document starts from page 2 below.</p>
+                </div>
+                <span class="card-badge">PDF page 1 · extracted</span>
+              </div>
+              <div class="cover-frame">
+                <img class="cover-img" src="cover/guide-cover.png" alt="KKH Dashboard Guide — cover page" loading="lazy">
+              </div>
+            </div>
+
             <div class="card pdf-card anim">
               <div class="card-head">
                 <div>
@@ -990,7 +1019,8 @@
      4. PDF.js — 按需加载，每次只渲染当前页
   ============================================================ */
   var pdfStates = {
-    "pdf-guide":     { page: 1, scale: 1, fit: true, doc: null, task: null, loading: false, loaded: false },
+    /* guide 初始页从 2 开始：第 1 页封面已独立展示（cover/guide-cover.png） */
+    "pdf-guide":     { page: 2, scale: 1, fit: true, doc: null, task: null, loading: false, loaded: false },
     "pdf-checklist": { page: 1, scale: 1, fit: true, doc: null, task: null, loading: false, loaded: false }
   };
 
