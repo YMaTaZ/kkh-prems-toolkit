@@ -377,7 +377,8 @@
   .hero-title{ font-size:36px; line-height:1.12; font-weight:700; letter-spacing:-.5px; color:var(--ink); margin:0 0 12px; }
   .hero-title .accent{ color:var(--blue-600); }
   .hero-sub{ font-size:14.5px; line-height:1.75; color:var(--ink-70); margin:0; max-width:560px; }
-  .hero-feats{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+  .hero-feats{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  .hero-feat .feat-desc{ margin:6px 0 0; font-size:11px; line-height:1.55; color:var(--ink-50); }
   .hero-feat{
     display:flex; flex-direction:column; gap:3px; padding:13px 14px 12px;
     border:1px solid var(--border); border-radius:12px; background:#FFFFFF;
@@ -486,11 +487,6 @@
           <span class="nav-label">Storyboard</span>
           <span class="nav-hint">7</span>
         </button>
-        <button class="nav-item" data-view="screenshots">
-          <svg class="nav-ico"><use href="#i-gallery"></use></svg>
-          <span class="nav-label">Screenshots</span>
-          <span class="nav-hint">10</span>
-        </button>
       </nav>
 
       <div class="sidebar-foot">
@@ -536,10 +532,24 @@
             </div>
             <div class="hero-body">
               <div class="hero-feats">
-                <div class="hero-feat" data-view="resource-guide" role="button" tabindex="0" aria-label="Open Resource Guide"><svg class="feat-ico"><use href="#i-doc"></use></svg><b>Resource Guide</b><span>7-section walkthrough</span></div>
-                <div class="hero-feat" data-view="checklist" role="button" tabindex="0" aria-label="Open Checklist"><svg class="feat-ico"><use href="#i-check"></use></svg><b>Checklist</b><span>print-ready actions</span></div>
-                <div class="hero-feat" data-view="storyboard" role="button" tabindex="0" aria-label="Open Storyboard"><svg class="feat-ico"><use href="#i-gallery"></use></svg><b>Storyboard</b><span>7-frame scenario</span></div>
-                <div class="hero-feat" data-view="screenshots" role="button" tabindex="0" aria-label="Open Screenshots"><svg class="feat-ico"><use href="#i-gallery"></use></svg><b>Screenshots</b><span>10 dashboard captures</span></div>
+                <div class="hero-feat" data-view="resource-guide" role="button" tabindex="0" aria-label="Open Resource Guide">
+                  <svg class="feat-ico"><use href="#i-doc"></use></svg>
+                  <b>Resource Guide</b>
+                  <span>7-section walkthrough</span>
+                  <p class="feat-desc">How to use the PX dashboard — filters, charts and decision rules explained step by step.</p>
+                </div>
+                <div class="hero-feat" data-view="checklist" role="button" tabindex="0" aria-label="Open Checklist">
+                  <svg class="feat-ico"><use href="#i-check"></use></svg>
+                  <b>Checklist</b>
+                  <span>print-ready actions</span>
+                  <p class="feat-desc">A printable action list that guides your team through each review cycle.</p>
+                </div>
+                <div class="hero-feat" data-view="storyboard" role="button" tabindex="0" aria-label="Open Storyboard">
+                  <svg class="feat-ico"><use href="#i-gallery"></use></svg>
+                  <b>Storyboard</b>
+                  <span>7-frame scenario</span>
+                  <p class="feat-desc">A 7-frame story showing how insights become everyday ward improvement.</p>
+                </div>
               </div>
             </div>
             <div class="hero-foot">
@@ -715,46 +725,8 @@
             </div>
           </section>
 
-          <!-- VIEW 4 · SCREENSHOTS（dashboard / resource guide 截图图集） -->
-          <section class="view" id="view-screenshots">
-            <div class="story-intro anim">
-              <div>
-                <h2>Dashboard &amp; Resource Guide screenshots</h2>
-                <p>Reference captures from the PX dashboard and resource guide. Click the image or use arrows to browse.</p>
-              </div>
-              <div style="display:flex;align-items:center;gap:14px;">
-                <span class="story-hint">Click image for <b>next</b> →</span>
-              </div>
-            </div>
-            <div class="story-stage anim">
-              <div class="story-frame" id="sshotFrame">
-                <div class="story-thumb" id="sshotThumb" role="button" tabindex="0" aria-label="Next screenshot">
-                  <div class="thumb-placeholder" id="sshotPlaceholder">
-                    <span class="ph-num">1</span>
-                    <span class="ph-file">LOADING</span>
-                  </div>
-                  <img id="sshotImage" alt="Dashboard screenshot" style="display:none">
-                  <span class="story-next-cue">Next <svg><use href="#i-chev-r"></use></svg></span>
-                </div>
-                <div class="story-caption">
-                  <h3 id="sshotTitle">1 · FILTERS</h3>
-                  <p id="sshotNote">—</p>
-                </div>
-              </div>
-              <div class="story-nav">
-                <button class="story-arrow" id="sshotPrev" aria-label="Previous screenshot">
-                  <svg><use href="#i-chev-l"></use></svg>
-                </button>
-                <span class="story-counter" id="sshotCounter">1 / 10</span>
-                <input class="story-jump" id="sshotJump" type="number" min="1" max="10" placeholder="1-10" aria-label="Jump to screenshot" title="Jump to screenshot">
-                <button class="story-arrow" id="sshotNext" aria-label="Next screenshot">
-                  <svg><use href="#i-chev-r"></use></svg>
-                </button>
-              </div>
-            </div>
-          </section>
-
-        </div>
+          
+</div>
       </main>
 
       <!-- Bottom status bar -->
@@ -836,7 +808,6 @@
     "resource-guide": { title: "Resource Guide", crumbs: "PREMs Toolkits / Resource Guide" },
     "checklist":      { title: "Checklist",      crumbs: "PREMs Toolkits / Checklist" },
     "storyboard":     { title: "Storyboard",     crumbs: "PREMs Toolkits / Storyboard" },
-    "screenshots":    { title: "Dashboard Screenshots", crumbs: "PREMs Toolkits / Screenshots" }
   };
 
   function stagger(view){
@@ -1308,87 +1279,7 @@
   ============================================================ */
   initStoryboard();
 
-  /* ============================================================
-     Screenshots 图集（dashboard / resource guide 截图，10 张）
-  ============================================================ */
-  var SCREENSHOT_IMAGES = [
-    { src: "screenshots/01.png", title: "1 · FILTERS", note: "Filters naming convention — include in resource guide" },
-    { src: "screenshots/02.png", title: "2 · LINE CHART", note: "Explain line chart — refer to examples in next slide" },
-    { src: "screenshots/03.png", title: "3 · RUN CHARTS", note: "Interpret run charts — understand improvement" },
-    { src: "screenshots/04.png", title: "4 · RUN CHART — SHIFT", note: "Rule 1 · Shift: 6+ consecutive values above/below the median" },
-    { src: "screenshots/05.png", title: "5 · LAUNCH QUALTRICS ASSIST", note: "How to launch Qualtrics Assist — to add in resource guide" },
-    { src: "screenshots/06.png", title: "6 · QUALTRICS ASSIST", note: "AI panel for open-text comments" },
-    { src: "screenshots/07.png", title: "7 · COPILOT — TEAMS", note: "Launching Co-pilot using TEAMS" },
-    { src: "screenshots/08.png", title: "8 · COPILOT", note: "Using Co-pilot for comprehensive, actionable recommendations" },
-    { src: "screenshots/09.png", title: "9 · SCREENSHOT TO COPILOT", note: "Screenshot the opportunity and paste to co-pilot" },
-    { src: "screenshots/10.png", title: "10 · USEFUL PROMPTS", note: "Quick wins, medium-term actions, long-term initiatives" }
-  ];
-
-  function initScreenshots(){
-    var frame = $("#sshotFrame");
-    var thumb = $("#sshotThumb");
-    var img = $("#sshotImage");
-    var ph = $("#sshotPlaceholder");
-    var counter = $("#sshotCounter");
-    var titleEl = $("#sshotTitle");
-    var noteEl = $("#sshotNote");
-    var idx = 0;
-
-    img.addEventListener("load", function(){ img.style.display = "block"; ph.style.display = "none"; });
-    img.addEventListener("error", function(){ img.style.display = "none"; ph.style.display = "flex"; });
-
-    function render(i){
-      var item = SCREENSHOT_IMAGES[i];
-      img.style.display = "none";
-      img.alt = item.title;
-      img.src = item.src;
-      ph.style.display = "flex";
-      $(".ph-num", ph).textContent = String(i + 1);
-      $(".ph-file", ph).textContent = "SCREENSHOT " + String(i + 1);
-      titleEl.textContent = item.title;
-      noteEl.textContent = item.note;
-      counter.textContent = (i + 1) + " / " + SCREENSHOT_IMAGES.length;
-    }
-    function go(delta){
-      idx = (idx + delta + SCREENSHOT_IMAGES.length) % SCREENSHOT_IMAGES.length;
-      frame.classList.remove("entering");
-      render(idx);
-      void frame.offsetWidth;
-      frame.classList.add("entering");
-      setTimeout(function(){ frame.classList.remove("entering"); }, 240);
-    }
-    thumb.addEventListener("click", function(){ go(1); });
-    $("#sshotPrev").addEventListener("click", function(){ go(-1); });
-    $("#sshotNext").addEventListener("click", function(){ go(1); });
-    var jump = $("#sshotJump");
-    if(jump){
-      jump.addEventListener("keydown", function(e){
-        if(e.key !== "Enter") return;
-        var v = parseInt(jump.value, 10);
-        jump.value = "";
-        if(!isNaN(v) && v >= 1 && v <= SCREENSHOT_IMAGES.length){
-          idx = v - 1;
-          frame.classList.remove("entering");
-          render(idx);
-          void frame.offsetWidth;
-          frame.classList.add("entering");
-          setTimeout(function(){ frame.classList.remove("entering"); }, 240);
-        }
-      });
-    }
-    /* 键盘左右键（仅 screenshots 视图激活时） */
-    document.addEventListener("keydown", function(e){
-      if(!$("#view-screenshots").classList.contains("active")) return;
-      var tag = (e.target && e.target.tagName) ? e.target.tagName : "";
-      if(tag === "INPUT" || tag === "TEXTAREA") return;
-      if(e.key === "ArrowRight"){ e.preventDefault(); go(1); }
-      if(e.key === "ArrowLeft"){ e.preventDefault(); go(-1); }
-    });
-    render(0);
-  }
-  initScreenshots();
-
-  /* 封面四个交互块 → 点击跳转到对应界面 */
+/* 封面四个交互块 → 点击跳转到对应界面 */
   $$(".hero-feat").forEach(function(feat){
     feat.addEventListener("click", function(){ navigate(feat.getAttribute("data-view")); });
     feat.addEventListener("keydown", function(e){

@@ -8,14 +8,14 @@ KK Women's and Children's Hospital（SingHealth）患者体验（PX）项目工�
 
 ## 这个仓库是做什么的
 
-为 PREMs Translation Toolkit 项目提供**面向一线医护与项目相关方的资源展示站**，把三类核心交付物集中呈现：
+为 PREMs Translation Toolkit 项目提供**面向一线医护与项目相关方的资源展示站**，集中呈现核心交付物：
 
 | 板块 | 内容 | 形式 |
 |---|---|---|
+| **Cover** | 封面页（项目品牌 + 工具入口） | 品牌封面 + 跳转卡 |
 | **Resource Guide** | PX Dashboard 资源指南（Filters / Quantitative / Prioritisation 等） | PDF.js 逐页渲染 + 翻页/缩放/跳转 |
 | **Checklist** | Dashboard Action Checklist（四步管理循环） | PDF.js 逐页渲染 |
 | **Storyboard** | 7 帧使用场景故事板（READ > UNDERSTAND > ACT） | 图集翻页 + 帧号跳转 + 一键打印 |
-| **Screenshots** | 10 张 dashboard / resource guide 参考截图 | 图集翻页 + 帧号跳转 |
 
 核心流程：**读懂数据 → 找到重点 → 打印清单 → 团队行动 → 复检**。
 
@@ -32,7 +32,6 @@ KK Women's and Children's Hospital（SingHealth）患者体验（PX）项目工�
 ├── index.html              # 单页应用（四个板块视图切换）
 ├── lib/                    # PDF.js 本地库
 ├── storyboard/             # 7 帧故事板图片（1.png ~ 7.png）
-├── screenshots/            # 10 张 dashboard 参考截图（01.png ~ 10.png）
 └── .github/workflows/      # GitHub Pages 部署工作流
 ```
 
@@ -46,10 +45,10 @@ PDF 文件不在此仓库，位于 [prems-assets](https://github.com/YMaTaZ/prem
 2. 等待其 GitHub Pages 自动部署（约 1-2 分钟）
 3. **主站无需改动**，预览与下载自动指向最新文件
 
-### 更新故事板 / 截图
+### 更新故事板
 
-- 替换 `storyboard/1.png ~ 7.png`（或 `screenshots/01.png ~ 10.png`）
-- 若新增/删减张数，同步更新 `index.html` 中 `STORYBOARD_IMAGES` / `SCREENSHOT_IMAGES` 数组与标题
+- 替换 `storyboard/1.png ~ 7.png`
+- 若新增/删减张数，同步更新 `index.html` 中 `STORYBOARD_IMAGES` 数组与标题
 - push 到 main，Actions 自动部署
 
 ## 设计要点
