@@ -367,6 +367,43 @@
   .cover-brand-text span{ font-size:11.5px; font-weight:600; letter-spacing:1.6px; text-transform:uppercase; color:var(--ink-50); }
   .cover-title{ padding:30px 40px; display:flex; flex-direction:column; justify-content:center; }
   .hero-body{ padding:22px 42px 30px; }
+  /* 核心流程条 */
+  .hero-flow{
+    margin-top:24px; padding-top:22px;
+    border-top:1px solid var(--border);
+  }
+  .flow-kicker{
+    display:block; margin-bottom:14px;
+    font-size:9.5px; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--blue-600);
+  }
+  .flow-steps{ display:grid; grid-template-columns:1fr auto 1fr auto 1fr; gap:18px; align-items:stretch; }
+  .flow-step{
+    border:1px solid var(--border); border-radius:12px; background:#FFFFFF;
+    padding:16px 18px 15px;
+    transition:box-shadow .18s var(--ease), border-color .18s var(--ease);
+  }
+  .flow-step:hover{ box-shadow:var(--shadow-hover); border-color:var(--blue-100); }
+  .flow-num{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:24px; height:24px; border-radius:8px; margin-bottom:10px;
+    background:var(--blue-600); color:#FFF; font-size:11px; font-weight:700;
+  }
+  .flow-step b{ display:block; font-size:13.5px; color:var(--ink); margin-bottom:4px; }
+  .flow-step p{ margin:0; font-size:11.5px; line-height:1.6; color:var(--ink-60); }
+  .flow-arrow{ display:flex; align-items:center; justify-content:center; color:var(--ink-30); }
+  .flow-arrow svg{ width:18px; height:18px; fill:currentColor; }
+  /* 关于工具包 */
+  .about-card{ margin-top:20px; }
+  .about-body{ padding:22px 24px 24px; }
+  .about-body > p{ margin:0 0 20px; font-size:13px; line-height:1.7; color:var(--ink-70); max-width:780px; }
+  .about-facts{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+  .fact{
+    border:1px solid var(--border); border-radius:12px; background:#FFFFFF;
+    padding:14px 16px; display:flex; flex-direction:column; gap:2px;
+  }
+  .fact b{ font-size:20px; color:var(--blue-600); letter-spacing:-.5px; }
+  .fact span{ font-size:11px; color:var(--ink-50); }
   .hero-badges{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
   .hero-badge{
     font-size:11px; font-weight:600; letter-spacing:.5px; text-transform:uppercase;
@@ -406,6 +443,11 @@
     .hero-feats{ grid-template-columns:1fr 1fr; }
     .hero-title{ font-size:29px; }
     .hero-foot{ padding:11px 26px; }
+  }
+  @media (max-width:860px){
+    .flow-steps{ grid-template-columns:1fr; gap:10px; }
+    .flow-arrow{ transform:rotate(90deg); }
+    .about-facts{ grid-template-columns:1fr 1fr; }
   }
   @media (max-width:600px){
     .hero-feats{ grid-template-columns:1fr; }
@@ -551,12 +593,55 @@
                   <p class="feat-desc">A 7-frame story showing how insights become everyday ward improvement.</p>
                 </div>
               </div>
+
+              <div class="hero-flow anim">
+                <span class="flow-kicker">How it works</span>
+                <div class="flow-steps">
+                  <div class="flow-step">
+                    <span class="flow-num">01</span>
+                    <b>Read</b>
+                    <p>Understand the PX dashboard — run charts, KPIs and verbatims at a glance.</p>
+                  </div>
+                  <div class="flow-arrow"><svg><use href="#i-chev-r"></use></svg></div>
+                  <div class="flow-step">
+                    <span class="flow-num">02</span>
+                    <b>Understand</b>
+                    <p>Find the focus — prioritise what matters most to patients and families.</p>
+                  </div>
+                  <div class="flow-arrow"><svg><use href="#i-chev-r"></use></svg></div>
+                  <div class="flow-step">
+                    <span class="flow-num">03</span>
+                    <b>Act</b>
+                    <p>Act together — print the checklist and drive everyday ward improvement.</p>
+                  </div>
+                </div>
+              </div>
             </div>
             <div class="hero-foot">
               <span>OPE × SUTD</span>
               <span>Restricted · Sensitive (Normal)</span>
             </div>
           </div>
+
+            <div class="card about-card anim">
+              <div class="card-head">
+                <div>
+                  <p class="card-kicker">About this toolkit</p>
+                  <h2 class="card-title">Why this toolkit</h2>
+                  <p class="card-sub">Built for ward teams to turn patient experience feedback into visible, everyday improvement — from reading the PX dashboard to acting on what patients say.</p>
+                </div>
+                <span class="card-badge">HCD Final Project · OPE × SUTD</span>
+              </div>
+              <div class="about-body">
+                <p>The PREMs Translation Toolkit walks a team through the whole journey: <b>read</b> the dashboard to understand patient experience, <b>understand</b> where to focus, and <b>act</b> with a printable checklist — together, month after month.</p>
+                <div class="about-facts">
+                  <div class="fact"><b>8</b><span>guide sections</span></div>
+                  <div class="fact"><b>4</b><span>checklist steps</span></div>
+                  <div class="fact"><b>7</b><span>storyboard frames</span></div>
+                  <div class="fact"><b>PDF</b><span>print-ready</span></div>
+                </div>
+              </div>
+            </div>
           </section>
 
           <!-- ============================================================
