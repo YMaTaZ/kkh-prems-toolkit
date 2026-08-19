@@ -337,7 +337,8 @@
 
   /* ---- Hero 封面栏（站点最顶部） ---- */
   .hero-card{
-    margin:24px 28px 0;
+    position:sticky; top:0; z-index:20;
+    max-width:1240px; margin:0 auto 24px;
     border:1px solid var(--border);
     border-radius:16px;
     background:linear-gradient(180deg,#FFFFFF 0%,#F8FAFD 100%);
@@ -380,9 +381,12 @@
   .hero-feat{
     display:flex; flex-direction:column; gap:3px; padding:13px 14px 12px;
     border:1px solid var(--border); border-radius:12px; background:#FFFFFF;
-    transition:box-shadow .18s var(--ease), border-color .18s var(--ease);
+    cursor:pointer; user-select:none;
+    transition:box-shadow .18s var(--ease), border-color .18s var(--ease), transform .18s var(--ease);
   }
-  .hero-feat:hover{ box-shadow:var(--shadow-hover); border-color:var(--blue-100); }
+  .hero-feat:hover{ box-shadow:var(--shadow-hover); border-color:var(--blue-100); transform:translateY(-1px); }
+  .hero-feat:focus-visible{ outline:2px solid var(--blue-600); outline-offset:2px; }
+  .hero-feat:active{ transform:translateY(0); }
   .hero-feat .feat-ico{ width:22px; height:22px; margin-bottom:7px; color:var(--blue-600); }
   .hero-feat .feat-ico svg{ width:100%; height:100%; fill:currentColor; }
   .hero-feat b{ font-size:13px; color:var(--ink); }
@@ -393,6 +397,7 @@
     font-size:11.5px; letter-spacing:.3px; color:var(--ink-50);
   }
   @media (max-width:1024px){
+    .hero-card{ position:static; margin:0 0 20px; }
     .hero-cover{ grid-template-columns:1fr; }
     .cover-brand{ border-right:0; border-bottom:1px solid var(--border); padding:22px 26px; }
     .cover-title{ padding:24px 26px; }
@@ -400,7 +405,6 @@
     .hero-feats{ grid-template-columns:1fr 1fr; }
     .hero-title{ font-size:29px; }
     .hero-foot{ padding:11px 26px; }
-    .hero-card{ margin:18px 18px 0; }
   }
   @media (max-width:600px){
     .hero-feats{ grid-template-columns:1fr; }
@@ -498,9 +502,8 @@
 
       <!-- Main content -->
       <main class="main" id="mainScroll">
-        <div class="view-shell">
 
-          <!-- HERO 封面栏 -->
+          <!-- HERO 封面栏（独立一栏，吸顶） -->
           <div class="hero-card anim">
             <div class="hero-cover">
               <div class="cover-brand">
@@ -522,10 +525,10 @@
             </div>
             <div class="hero-body">
               <div class="hero-feats">
-                <div class="hero-feat"><svg class="feat-ico"><use href="#i-doc"></use></svg><b>Resource Guide</b><span>7-section walkthrough</span></div>
-                <div class="hero-feat"><svg class="feat-ico"><use href="#i-check"></use></svg><b>Checklist</b><span>print-ready actions</span></div>
-                <div class="hero-feat"><svg class="feat-ico"><use href="#i-gallery"></use></svg><b>Storyboard</b><span>7-frame scenario</span></div>
-                <div class="hero-feat"><svg class="feat-ico"><use href="#i-gallery"></use></svg><b>Screenshots</b><span>10 dashboard captures</span></div>
+                <div class="hero-feat" data-view="resource-guide" role="button" tabindex="0" aria-label="Open Resource Guide"><svg class="feat-ico"><use href="#i-doc"></use></svg><b>Resource Guide</b><span>7-section walkthrough</span></div>
+                <div class="hero-feat" data-view="checklist" role="button" tabindex="0" aria-label="Open Checklist"><svg class="feat-ico"><use href="#i-check"></use></svg><b>Checklist</b><span>print-ready actions</span></div>
+                <div class="hero-feat" data-view="storyboard" role="button" tabindex="0" aria-label="Open Storyboard"><svg class="feat-ico"><use href="#i-gallery"></use></svg><b>Storyboard</b><span>7-frame scenario</span></div>
+                <div class="hero-feat" data-view="screenshots" role="button" tabindex="0" aria-label="Open Screenshots"><svg class="feat-ico"><use href="#i-gallery"></use></svg><b>Screenshots</b><span>10 dashboard captures</span></div>
               </div>
             </div>
             <div class="hero-foot">
@@ -533,6 +536,8 @@
               <span>Restricted · Sensitive (Normal)</span>
             </div>
           </div>
+
+        <div class="view-shell">
 
           <!-- ============================================================
                VIEW 1 · RESOURCE GUIDE
@@ -1370,6 +1375,14 @@
     render(0);
   }
   initScreenshots();
+
+  /* 封面四个交互块 → 点击跳转到对应界面 */
+  $$(".hero-feat").forEach(function(feat){
+    feat.addEventListener("click", function(){ navigate(feat.getAttribute("data-view")); });
+    feat.addEventListener("keydown", function(e){
+      if(e.key === "Enter" || e.key === " "){ e.preventDefault(); navigate(feat.getAttribute("data-view")); }
+    });
+  });
 
   /* 故事板一键打印全部 7 帧（每帧一页） */
   function buildPrintAll(){
