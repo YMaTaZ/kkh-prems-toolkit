@@ -1014,7 +1014,7 @@
      4. PDF.js — 按需加载，每次只渲染当前页
   ============================================================ */
   var pdfStates = {
-    /* guide 初始页从 2 开始：第 1 页封面已独立展示（cover/guide-cover.png） */
+    /* guide 初始页从 2 开始：第 1 页为封面页（封面不再单独展示，仅存在于 PDF 内） */
     "pdf-guide":     { page: 2, scale: 1, fit: true, doc: null, task: null, loading: false, loaded: false },
     "pdf-checklist": { page: 1, scale: 1, fit: true, doc: null, task: null, loading: false, loaded: false }
   };
