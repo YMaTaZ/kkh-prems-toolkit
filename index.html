@@ -141,8 +141,9 @@
   @keyframes viewIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
   /* 卡片/区块错峰入场（80ms stagger） */
   .anim{opacity:0}
-  .view.active .anim,.view.exiting .anim{opacity:1}
+  .view.active .anim,.view.exiting .anim,.hero-card.anim{opacity:1}
   .view.active .anim{animation:cardIn .45s var(--ease) both;animation-delay:calc(var(--i,0)*80ms)}
+  .hero-card.anim{animation:cardIn .45s var(--ease) both}
   @keyframes cardIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 
   /* ============================ Generic card ============================ */
@@ -333,6 +334,78 @@
     #printAll .print-page h3{margin:4mm 0 1mm;font-size:14pt;color:#222}
     #printAll .print-page p{margin:0;font-size:10.5pt;color:#555}
   }
+
+  /* ---- Hero 封面栏（站点最顶部） ---- */
+  .hero-card{
+    margin:24px 28px 0;
+    border:1px solid var(--border);
+    border-radius:16px;
+    background:linear-gradient(180deg,#FFFFFF 0%,#F8FAFD 100%);
+    box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+  .hero-cover{
+    display:grid; grid-template-columns:auto 1fr;
+    border-bottom:1px solid var(--border);
+    background:linear-gradient(180deg,#FFFFFF 0%,#F8FAFD 100%);
+  }
+  .cover-brand{
+    display:flex; align-items:center; gap:16px;
+    padding:32px 40px; border-right:1px solid var(--border);
+    background:linear-gradient(180deg,#FFFFFF 0%,#FAFBFF 100%);
+  }
+  .cover-logo{
+    width:54px; height:54px; flex:none; border-radius:14px;
+    background:linear-gradient(135deg,var(--blue-600),#1E4E79);
+    color:#FFFFFF; font-weight:800; font-size:15px; letter-spacing:.5px;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 5px 14px rgba(31,78,121,.18);
+  }
+  .cover-brand-text{ display:flex; flex-direction:column; gap:3px; }
+  .cover-brand-text b{ font-size:17px; line-height:1.3; color:var(--ink); }
+  .cover-brand-text span{ font-size:11.5px; font-weight:600; letter-spacing:1.6px; text-transform:uppercase; color:var(--ink-50); }
+  .cover-title{ padding:30px 40px; display:flex; flex-direction:column; justify-content:center; }
+  .hero-body{ padding:22px 42px 30px; }
+  .hero-badges{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+  .hero-badge{
+    font-size:11px; font-weight:600; letter-spacing:.5px; text-transform:uppercase;
+    padding:4px 11px; border-radius:999px; border:1px solid var(--border);
+    color:var(--ink-70); background:#FFFFFF;
+  }
+  .hero-badge-warn{ color:#B45309; border-color:#F2D8B6; background:#FFF9F0; }
+  .hero-title{ font-size:36px; line-height:1.12; font-weight:700; letter-spacing:-.5px; color:var(--ink); margin:0 0 12px; }
+  .hero-title .accent{ color:var(--blue-600); }
+  .hero-sub{ font-size:14.5px; line-height:1.75; color:var(--ink-70); margin:0; max-width:560px; }
+  .hero-feats{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+  .hero-feat{
+    display:flex; flex-direction:column; gap:3px; padding:13px 14px 12px;
+    border:1px solid var(--border); border-radius:12px; background:#FFFFFF;
+    transition:box-shadow .18s var(--ease), border-color .18s var(--ease);
+  }
+  .hero-feat:hover{ box-shadow:var(--shadow-hover); border-color:var(--blue-100); }
+  .hero-feat .feat-ico{ width:22px; height:22px; margin-bottom:7px; color:var(--blue-600); }
+  .hero-feat .feat-ico svg{ width:100%; height:100%; fill:currentColor; }
+  .hero-feat b{ font-size:13px; color:var(--ink); }
+  .hero-feat span:last-child{ font-size:11.5px; color:var(--ink-50); }
+  .hero-foot{
+    display:flex; justify-content:space-between; align-items:center; gap:16px;
+    padding:11px 42px; border-top:1px solid var(--border); background:#FFFFFF;
+    font-size:11.5px; letter-spacing:.3px; color:var(--ink-50);
+  }
+  @media (max-width:1024px){
+    .hero-cover{ grid-template-columns:1fr; }
+    .cover-brand{ border-right:0; border-bottom:1px solid var(--border); padding:22px 26px; }
+    .cover-title{ padding:24px 26px; }
+    .hero-body{ padding:20px 26px 24px; }
+    .hero-feats{ grid-template-columns:1fr 1fr; }
+    .hero-title{ font-size:29px; }
+    .hero-foot{ padding:11px 26px; }
+    .hero-card{ margin:18px 18px 0; }
+  }
+  @media (max-width:600px){
+    .hero-feats{ grid-template-columns:1fr; }
+    .hero-foot{ flex-direction:column; align-items:flex-start; gap:6px; }
+  }
 </style>
 </head>
 <body>
@@ -426,6 +499,40 @@
       <!-- Main content -->
       <main class="main" id="mainScroll">
         <div class="view-shell">
+
+          <!-- HERO 封面栏 -->
+          <div class="hero-card anim">
+            <div class="hero-cover">
+              <div class="cover-brand">
+                <div class="cover-logo" aria-hidden="true">KKH</div>
+                <div class="cover-brand-text">
+                  <b>KK Women's &amp; Children's Hospital</b>
+                  <span>SingHealth</span>
+                </div>
+              </div>
+              <div class="cover-title">
+                <div class="hero-badges">
+                  <span class="hero-badge">HCD Final Project</span>
+                  <span class="hero-badge">July 2026</span>
+                  <span class="hero-badge hero-badge-warn">Restricted · Sensitive</span>
+                </div>
+                <h1 class="hero-title">PX Dashboard <span class="accent">Translation Toolkit</span></h1>
+                <p class="hero-sub">From data to action — a resource guide, checklist and storyboard that turn patient experience insights into everyday ward improvement.</p>
+              </div>
+            </div>
+            <div class="hero-body">
+              <div class="hero-feats">
+                <div class="hero-feat"><svg class="feat-ico"><use href="#i-doc"></use></svg><b>Resource Guide</b><span>7-section walkthrough</span></div>
+                <div class="hero-feat"><svg class="feat-ico"><use href="#i-check"></use></svg><b>Checklist</b><span>print-ready actions</span></div>
+                <div class="hero-feat"><svg class="feat-ico"><use href="#i-gallery"></use></svg><b>Storyboard</b><span>7-frame scenario</span></div>
+                <div class="hero-feat"><svg class="feat-ico"><use href="#i-gallery"></use></svg><b>Screenshots</b><span>10 dashboard captures</span></div>
+              </div>
+            </div>
+            <div class="hero-foot">
+              <span>OPE × SUTD</span>
+              <span>Restricted · Sensitive (Normal)</span>
+            </div>
+          </div>
 
           <!-- ============================================================
                VIEW 1 · RESOURCE GUIDE
