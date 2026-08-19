@@ -351,8 +351,7 @@
 
   /* ---- Hero 封面栏（站点最顶部） ---- */
   .hero-card{
-    position:sticky; top:0; z-index:20;
-    max-width:1240px; margin:0 auto 24px;
+    max-width:1240px; margin:0 0 20px;
     border:1px solid var(--border);
     border-radius:16px;
     background:linear-gradient(180deg,#FFFFFF 0%,#F8FAFD 100%);
@@ -438,6 +437,10 @@
         <rect x="4" y="3.5" width="16" height="17" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.7"/>
         <path d="m8 12 2.6 2.6L16.5 8.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
       </symbol>
+      <symbol id="i-home" viewBox="0 0 24 24">
+        <path d="M4 10.5 12 4l8 6.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M6 9.5V20h12V9.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+      </symbol>
       <symbol id="i-gallery" viewBox="0 0 24 24">
         <rect x="3.5" y="4.5" width="17" height="15" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/>
         <circle cx="9" cy="10" r="1.6" fill="none" stroke="currentColor" stroke-width="1.5"/>
@@ -476,7 +479,12 @@
 
       <nav class="nav" aria-label="Toolkit sections">
         <div class="nav-group-label">Toolkit</div>
-        <button class="nav-item active" data-view="resource-guide" aria-current="page">
+        <button class="nav-item active" data-view="cover" aria-current="page">
+          <svg class="nav-ico"><use href="#i-home"></use></svg>
+          <span class="nav-label">Cover</span>
+          <span class="nav-hint">Guide</span>
+        </button>
+        <button class="nav-item" data-view="resource-guide">
           <svg class="nav-ico"><use href="#i-doc"></use></svg>
           <span class="nav-label">Resource Guide</span>
           <span class="nav-hint">PDF</span>
@@ -510,14 +518,16 @@
     <section class="workspace">
       <!-- Top title bar -->
       <header class="topbar">
-        <div class="crumbs" id="crumbs">PREMs Toolkits / Resource Guide</div>
-        <h1 class="page-title" id="pageTitle">Resource Guide</h1>
+        <div class="crumbs" id="crumbs">PREMs Toolkits / Cover</div>
+        <h1 class="page-title" id="pageTitle">Cover</h1>
       </header>
 
       <!-- Main content -->
       <main class="main" id="mainScroll">
+        <div class="view-shell">
 
-          <!-- HERO 封面栏（独立一栏，吸顶） -->
+          <!-- VIEW 0 · COVER 封面板块（独立一页，不含其他板块） -->
+          <section class="view active" id="view-cover">
           <div class="hero-card anim">
             <div class="hero-cover">
               <div class="cover-brand">
@@ -551,21 +561,12 @@
             </div>
           </div>
 
-        <div class="view-shell">
-
-          <!-- ============================================================
-               VIEW 1 · RESOURCE GUIDE
-               【嵌入点：Resource Guide PDF 路径】
-               对应 JS 配置：PDF_SOURCES.guide（当前占位 "resource-guide.pdf"）
-          ============================================================ -->
-          <section class="view active" id="view-resource-guide">
-            <!-- 封面独立一栏（从 PDF 预览中拆出，单独展示） -->
             <div class="card cover-card anim">
               <div class="card-head">
                 <div>
                   <p class="card-kicker">Guide Cover</p>
                   <h2 class="card-title">KKH Dashboard Guide</h2>
-                  <p class="card-sub">Read → Understand → Act for Better Patient Experience. The cover is presented separately; the full document starts from page 2 below.</p>
+                  <p class="card-sub">Read → Understand → Act for Better Patient Experience. The guide cover, presented as the toolkit's opening page.</p>
                 </div>
                 <span class="card-badge">PDF page 1 · extracted</span>
               </div>
@@ -573,7 +574,14 @@
                 <img class="cover-img" src="cover/guide-cover.png" alt="KKH Dashboard Guide — cover page" loading="lazy">
               </div>
             </div>
+          </section>
 
+          <!-- ============================================================
+               VIEW 1 · RESOURCE GUIDE
+               【嵌入点：Resource Guide PDF 路径】
+               对应 JS 配置：PDF_SOURCES.guide（当前占位 "resource-guide.pdf"）
+          ============================================================ -->
+          <section class="view" id="view-resource-guide">
             <div class="card pdf-card anim">
               <div class="card-head">
                 <div>
@@ -851,6 +859,7 @@
      2. Navigation — 三个板块切换
   ============================================================ */
   var PAGES = {
+    "cover":          { title: "Cover",          crumbs: "PREMs Toolkits / Cover" },
     "resource-guide": { title: "Resource Guide", crumbs: "PREMs Toolkits / Resource Guide" },
     "checklist":      { title: "Checklist",      crumbs: "PREMs Toolkits / Checklist" },
     "storyboard":     { title: "Storyboard",     crumbs: "PREMs Toolkits / Storyboard" },
